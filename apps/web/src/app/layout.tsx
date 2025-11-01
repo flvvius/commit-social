@@ -10,6 +10,7 @@ import { Theme, Box, Grid } from "@radix-ui/themes";
 import { Navbar } from "@/components/navbar";
 import { LeftSidebar } from "@/components/left-sidebar";
 import { RightSidebar } from "@/components/right-sidebar";
+import { OnboardingDialog } from "@/components/onboarding-dialog";
 
 const figTreeSans = Figtree({
   subsets: ["latin"],
@@ -33,6 +34,9 @@ export default function RootLayout({
           <Providers>
             {/* Radix Theme component should wrap your entire app */}
             <Theme>
+              {/* Onboarding Dialog - Shows on first login */}
+              <OnboardingDialog />
+
               {/* 1. TOP NAV / HEADER */}
               {/* This component sits outside the main grid, spanning the full width. */}
               <Navbar />

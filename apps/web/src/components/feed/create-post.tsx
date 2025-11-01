@@ -18,6 +18,7 @@ import {
   Dialog,
   Separator,
   Select,
+  Checkbox,
 } from "@radix-ui/themes";
 import { FilePond } from "react-filepond";
 import "filepond/dist/filepond.min.css";
@@ -46,9 +47,9 @@ export function CreatePost({
   const createPost = useMutation(api.posts.create);
   const generateUploadUrl = useAction(api.posts.generateUploadUrl);
 
-  // Fetch departments and groups
-  const departments = useQuery(api.departments.list, {});
-  const groups = useQuery(api.groups.list, {});
+  // Fetch current user and their joined groups
+  const currentUser = useQuery(api.users.getCurrentUser);
+  const allGroups = useQuery(api.groups.list, { joined: true }); // Only joined groups
 
   const [content, setContent] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -58,8 +59,8 @@ export function CreatePost({
   const [captions, setCaptions] = useState<string[]>([]);
   const [pondFiles, setPondFiles] = useState<any[]>([]);
 
-  // New state for department and group selection
-  const [selectedDepartment, setSelectedDepartment] = useState<string>("");
+  // State for posting destination
+  const [postToMyDepartment, setPostToMyDepartment] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState<string>("");
 
   const disabled =
@@ -91,18 +92,20 @@ export function CreatePost({
           content: content.trim(),
           images,
           isShowcase: variant === "showcase",
-          departmentId: selectedDepartment
-            ? (selectedDepartment as any)
-            : undefined,
+          departmentId:
+            postToMyDepartment && currentUser?.departmentId
+              ? (currentUser.departmentId as any)
+              : undefined,
           groupId: selectedGroup ? (selectedGroup as any) : undefined,
         });
       } else {
         await createPost({
           content: content.trim(),
           isShowcase: variant === "showcase",
-          departmentId: selectedDepartment
-            ? (selectedDepartment as any)
-            : undefined,
+          departmentId:
+            postToMyDepartment && currentUser?.departmentId
+              ? (currentUser.departmentId as any)
+              : undefined,
           groupId: selectedGroup ? (selectedGroup as any) : undefined,
         });
       }
@@ -111,7 +114,7 @@ export function CreatePost({
       setFiles([]);
       setPondFiles([]);
       setCaptions([]);
-      setSelectedDepartment("");
+      setPostToMyDepartment(false);
       setSelectedGroup("");
       toast.success("Posted");
       onCreated?.();
@@ -170,25 +173,17 @@ export function CreatePost({
               {/* Department and Group Selectors */}
               <Flex gap="3">
                 <Box style={{ flex: 1 }}>
-                  <Text as="label" size="2" weight="bold" mb="1">
-                    Department (optional)
-                  </Text>
-                  <Select.Root
-                    value={selectedDepartment || undefined}
-                    onValueChange={(val) => setSelectedDepartment(val || "")}
-                  >
-                    <Select.Trigger
-                      placeholder="Select department..."
-                      style={{ width: "100%" }}
-                    />
-                    <Select.Content>
-                      {departments?.map((dept) => (
-                        <Select.Item key={dept._id} value={dept._id}>
-                          {dept.emoji} {dept.name}
-                        </Select.Item>
-                      ))}
-                    </Select.Content>
-                  </Select.Root>
+                  <Flex asChild align="center" gap="2">
+                    <label>
+                      <Checkbox
+                        checked={postToMyDepartment}
+                        onCheckedChange={(checked) =>
+                          setPostToMyDepartment(!!checked)
+                        }
+                      />
+                      <Text size="2">Post to my department</Text>
+                    </label>
+                  </Flex>
                 </Box>
 
                 <Box style={{ flex: 1 }}>
@@ -204,7 +199,7 @@ export function CreatePost({
                       style={{ width: "100%" }}
                     />
                     <Select.Content>
-                      {groups?.map((group) => (
+                      {allGroups?.map((group) => (
                         <Select.Item key={group._id} value={group._id}>
                           {group.emoji} {group.name}
                         </Select.Item>

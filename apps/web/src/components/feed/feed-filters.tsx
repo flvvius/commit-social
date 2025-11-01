@@ -19,8 +19,12 @@ export function FeedFilters({
   onDepartmentChange,
   onGroupChange,
 }: FeedFiltersProps) {
-  const departments = useQuery(api.departments.list, {});
-  const groups = useQuery(api.groups.list, {});
+  const currentUser = useQuery(api.users.getCurrentUser);
+  const myDepartment = useQuery(
+    api.departments.get,
+    currentUser?.departmentId ? { id: currentUser.departmentId } : "skip"
+  );
+  const myGroups = useQuery(api.groups.list, { joined: true }); // Only joined groups
 
   return (
     <Box mb="4">
@@ -32,41 +36,46 @@ export function FeedFilters({
           </Text>
         </Flex>
 
-        <Select.Root
-          value={selectedDepartment || undefined}
-          onValueChange={(val) => onDepartmentChange(val || "")}
-        >
-          <Select.Trigger
-            placeholder="All Departments"
-            style={{ minWidth: "180px" }}
-          />
-          <Select.Content>
-            {departments?.map((dept) => (
-              <Select.Item key={dept._id} value={dept._id}>
-                {dept.emoji} {dept.name}
-              </Select.Item>
-            ))}
-          </Select.Content>
-        </Select.Root>
+        {/* Show user's department (not selectable - they can only see their own) */}
+        {myDepartment && (
+          <Flex
+            align="center"
+            gap="2"
+            px="3"
+            py="2"
+            style={{
+              border: "1px solid var(--gray-6)",
+              borderRadius: "8px",
+              background: "var(--gray-2)",
+            }}
+          >
+            <Text size="2">
+              {myDepartment.emoji} {myDepartment.name} (My Department)
+            </Text>
+          </Flex>
+        )}
 
-        <Select.Root
-          value={selectedGroup || undefined}
-          onValueChange={(val) => onGroupChange(val || "")}
-        >
-          <Select.Trigger
-            placeholder="All Groups"
-            style={{ minWidth: "180px" }}
-          />
-          <Select.Content>
-            {groups?.map((group) => (
-              <Select.Item key={group._id} value={group._id}>
-                {group.emoji} {group.name}
-              </Select.Item>
-            ))}
-          </Select.Content>
-        </Select.Root>
+        {/* Groups dropdown - only show joined groups */}
+        {myGroups && myGroups.length > 0 && (
+          <Select.Root
+            value={selectedGroup || undefined}
+            onValueChange={(val) => onGroupChange(val || "")}
+          >
+            <Select.Trigger
+              placeholder="All My Groups"
+              style={{ minWidth: "180px" }}
+            />
+            <Select.Content>
+              {myGroups.map((group) => (
+                <Select.Item key={group._id} value={group._id}>
+                  {group.emoji} {group.name}
+                </Select.Item>
+              ))}
+            </Select.Content>
+          </Select.Root>
+        )}
 
-        {(selectedDepartment || selectedGroup) && (
+        {selectedGroup && (
           <Button
             size="1"
             variant="ghost"
@@ -76,7 +85,7 @@ export function FeedFilters({
             }}
           >
             <X className="h-3 w-3" />
-            Clear filters
+            Clear filter
           </Button>
         )}
       </Flex>
