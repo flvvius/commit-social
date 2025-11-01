@@ -8,17 +8,36 @@ import { NewMessageDialog } from "./new-message-dialog";
 type Conversation = {
   _id: Id<"conversations">;
   type: string;
-  participants: Id<"users">[];
+  participants: Array<{
+    _id: Id<"users">;
+    name: string;
+    email: string;
+    avatarUrl?: string;
+    bio?: string;
+    _creationTime: number;
+  } | null>;
   lastMessageAt?: number;
   unreadCount: number;
   lastMessage?: {
+    _id: Id<"messages">;
+    conversationId: Id<"conversations">;
+    senderId: Id<"users">;
     content: string;
+    mediaUrls?: string[];
+    readBy: Id<"users">[];
     createdAt: number;
+    _creationTime: number;
   } | null;
   otherUser?: {
+    _id: Id<"users">;
     name: string;
+    email: string;
     avatarUrl?: string;
+    bio?: string;
+    _creationTime: number;
   } | null;
+  createdAt: number;
+  _creationTime: number;
 };
 
 type Props = {
