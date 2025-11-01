@@ -33,6 +33,7 @@ export const create = mutation({
 
     if (!authorId) {
       authorId = await ctx.db.insert("users", {
+        clerkId: identity.subject,
         name: identity.name ?? identity.email.split("@")[0],
         email: identity.email,
         avatarUrl: identity.pictureUrl ?? undefined,
