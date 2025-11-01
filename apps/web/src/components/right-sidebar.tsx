@@ -1,20 +1,45 @@
 "use client";
 
-import { MessageCircle, Gift } from "lucide-react";
+import { MessageCircle, Gift, Cigarette } from "lucide-react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@social-media-app/backend/convex/_generated/api";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export function RightSidebar() {
   const conversations = useQuery(api.messages.getConversations);
   const birthdays = useQuery(api.users.listUpcomingBirthdays, { days: 7 });
   const recentConversations = conversations?.slice(0, 3) || [];
   const getOrCreate = useMutation(api.messages.getOrCreateDirectConversation);
+  const sendCigaretteCall = useMutation(api.notifications.sendCigaretteCall);
   const router = useRouter();
+  
 
   return (
     <aside className="w-72 border-l border-border bg-background overflow-y-auto">
+      {/* Let's go smoke */}
+      <div className="p-4 border-b border-border">
+        <button
+          className="w-full flex items-center justify-center gap-2 text-sm bg-primary text-primary-foreground px-3 py-2 rounded hover:opacity-90"
+          onClick={async () => {
+            try {
+              // Use the group's slug to be explicit and robust
+              const res = await sendCigaretteCall({ groupName: "smokers-lounge" });
+              toast.success(`Notified ${res.delivered} people: Come to smoke`);
+            } catch (e: any) {
+              toast.error(e?.message || "Failed to send notification");
+            }
+          }}
+          aria-label="Let's go smoke"
+        >
+          <Cigarette className="h-4 w-4" />
+          Let's go smoke
+        </button>
+      </div>
+
+      {/* Daily Quiz removed from right sidebar */}
+
       {/* Birthdays */}
       <div className="p-4 border-b border-border">
         <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">

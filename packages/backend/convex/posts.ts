@@ -87,6 +87,22 @@ export const create = mutation({
 
     const postId = await ctx.db.insert("posts", doc);
 
+    // Badge: Active Contributor (>= 3 posts)
+    try {
+      const postsByAuthor = await ctx.db
+        .query("posts")
+        .withIndex("by_author", (q) => q.eq("authorId", authorId))
+        .take(3);
+      if (postsByAuthor.length >= 3) {
+        const user = await ctx.db.get(authorId);
+        const BADGE = "Active Contributor Badge Design.png";
+        const existing = (user as any)?.badges || [];
+        if (!existing.includes(BADGE)) {
+          await ctx.db.patch(authorId, { badges: [...existing, BADGE] });
+        }
+      }
+    } catch {}
+
     return await ctx.db.get(postId);
   },
 });

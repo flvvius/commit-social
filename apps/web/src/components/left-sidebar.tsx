@@ -1,18 +1,17 @@
 "use client";
 
-import { ChevronDown, Flame, Plus } from "lucide-react";
-import { mockQuiz } from "@/lib/mock-data";
+import { ChevronDown, Plus } from "lucide-react";
 import { useState } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@social-media-app/backend/convex/_generated/api";
 import { CreateGroupDialog } from "./groups/create-group-dialog";
 import { Button, Flex, Text, Box } from "@radix-ui/themes";
 import { toast } from "sonner";
-import Link from "next/link";
+import { DailyQuizCard } from "./games/daily-quiz";
 
 export function LeftSidebar() {
   const [groupsExpanded, setGroupsExpanded] = useState(true);
-  const [answered, setAnswered] = useState(false);
+  // no local answered state; the quiz component manages state
 
   // Fetch real groups from backend
   const allGroups = useQuery(api.groups.list, {});
@@ -106,32 +105,7 @@ export function LeftSidebar() {
 
       {/* Daily Quiz */}
       <div className="p-4 border-b border-border">
-        <div className="bg-card border border-border rounded-lg p-3">
-          <h3 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
-            <Flame className="h-4 w-4 text-orange-500" />
-            Daily Quiz
-          </h3>
-          <p className="text-xs text-muted-foreground mb-3">
-            {mockQuiz.question}
-          </p>
-          <div className="space-y-2">
-            {mockQuiz.options.map((option, idx) => (
-              <button
-                key={idx}
-                onClick={() => setAnswered(true)}
-                disabled={answered}
-                className="w-full text-xs px-2 py-1 rounded border border-border hover:bg-muted disabled:bg-muted transition-colors text-foreground"
-              >
-                {option}
-              </button>
-            ))}
-          </div>
-          {answered && (
-            <p className="text-xs text-green-600 mt-2 font-medium">
-              ✓ Correct! Streak: +1
-            </p>
-          )}
-        </div>
+        <DailyQuizCard />
       </div>
     </aside>
   );

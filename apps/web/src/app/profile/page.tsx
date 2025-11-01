@@ -17,11 +17,12 @@ import {
   TextArea,
   TextField,
   Text,
+  Tooltip,
 } from "@radix-ui/themes";
 import { SignInButton, SignedOut } from "@clerk/nextjs";
 import { Github, Linkedin, Twitter, Globe, Flame, Plus, Trash2, Pencil } from "lucide-react";
 import { PostCard } from "@/components/feed/post-card";
-import { AVAILABLE_BADGES, badgeUrl } from "@/lib/badges";
+import { AVAILABLE_BADGES, badgeUrl, getBadgeMeta } from "@/lib/badges";
 import { Checkbox } from "@/components/ui/checkbox";
 
 type SocialLink = { platform: string; url: string };
@@ -44,6 +45,7 @@ export default function ProfilePage() {
   const [open, setOpen] = useState(false);
   const [bioDraft, setBioDraft] = useState("");
   const [bannerDraft, setBannerDraft] = useState("");
+  const [birthdayDraft, setBirthdayDraft] = useState("");
   const [linksDraft, setLinksDraft] = useState<SocialLink[]>([]);
   const [saving, setSaving] = useState(false);
   const [selectedBadges, setSelectedBadges] = useState<string[]>([]);
@@ -56,6 +58,7 @@ export default function ProfilePage() {
     const badges = ((u.badges ?? []) as string[]) ?? [];
     setBioDraft((u.bio as string) ?? "");
     setBannerDraft((u.bannerUrl as string) ?? "");
+    setBirthdayDraft(((u as any).birthday as string) ?? "");
     setLinksDraft([...links]);
     setSelectedBadges([...badges]);
     // Only re-run when the identity of the user doc changes
@@ -112,6 +115,7 @@ export default function ProfilePage() {
       await updateProfile({
         bio: bioDraft,
         bannerUrl: bannerDraft || undefined,
+        birthday: birthdayDraft || undefined,
         socialLinks: linksDraft
           .filter((l) => l.url.trim().length > 0)
           .map((l) => ({ platform: l.platform || "Website", url: l.url })),
@@ -181,6 +185,14 @@ export default function ProfilePage() {
                     <Box>
                       <Text size="2" color="gray">Descriere</Text>
                       <TextArea value={bioDraft} onChange={(e) => setBioDraft(e.target.value)} />
+                    </Box>
+                    <Box>
+                      <Text size="2" color="gray">Ziua de naștere</Text>
+                      <TextField.Root
+                        type="date"
+                        value={birthdayDraft}
+                        onChange={(e) => setBirthdayDraft(e.target.value)}
+                      />
                     </Box>
                     <Box>
                       <Text size="2" color="gray">Link-uri sociale</Text>
@@ -317,16 +329,27 @@ export default function ProfilePage() {
               gap: 12,
             }}
           >
-            {(earnedBadges.length > 0 ? earnedBadges : []).map((file, i) => (
-              <div key={i} style={{ position: "relative" }}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={badgeUrl(file)}
-                  alt={file.replace(/\.[^.]+$/, "")}
-                  style={{ width: "100%", aspectRatio: "1/1", borderRadius: 12, objectFit: "cover" }}
-                />
-              </div>
-            ))}
+            {(earnedBadges.length > 0 ? earnedBadges : []).map((file, i) => {
+              const meta = getBadgeMeta(file);
+              const content = (
+                <div className="rounded-md border border-border bg-card px-3 py-2 shadow-md text-xs max-w-[240px]">
+                  <div className="font-medium text-foreground">{meta.title}</div>
+                  <div className="mt-1 text-muted-foreground leading-snug">{meta.description}</div>
+                </div>
+              );
+              return (
+                <Tooltip key={i} content={content}>
+                  <div style={{ position: "relative" }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={badgeUrl(file)}
+                      alt={file.replace(/\.[^.]+$/, "")}
+                      style={{ width: "100%", aspectRatio: "1/1", borderRadius: 12, objectFit: "cover" }}
+                    />
+                  </div>
+                </Tooltip>
+              );
+            })}
             {earnedBadges.length === 0 && (
               <Text color="gray">Încă nu ai badge-uri câștigate.</Text>
             )}
@@ -351,31 +374,40 @@ export default function ProfilePage() {
           >
             {badgesToShow.map((file, i) => {
               const isEarned = userBadges.includes(file);
+              const meta = getBadgeMeta(file);
+              const content = (
+                <div className="rounded-md border border-border bg-card px-3 py-2 shadow-md text-xs max-w-[240px]">
+                  <div className="font-medium text-foreground">{meta.title}</div>
+                  <div className="mt-1 text-muted-foreground leading-snug">{meta.description}</div>
+                </div>
+              );
               return (
-                <div key={i} style={{ position: "relative" }}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={badgeUrl(file)}
-                    alt={file.replace(/\.[^.]+$/, "")}
-                    style={{
-                      width: "100%",
-                      aspectRatio: "1/1",
-                      borderRadius: 12,
-                      objectFit: "cover",
-                      filter: isEarned ? undefined : "grayscale(100%) brightness(0.6)",
-                    }}
-                  />
-                  {!isEarned && (
-                    <div
+                <Tooltip key={i} content={content}>
+                  <div style={{ position: "relative" }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={badgeUrl(file)}
+                      alt={file.replace(/\.[^.]+$/, "")}
                       style={{
-                        position: "absolute",
-                        inset: 0,
-                        background: "rgba(0,0,0,0.35)",
+                        width: "100%",
+                        aspectRatio: "1/1",
                         borderRadius: 12,
+                        objectFit: "cover",
+                        filter: isEarned ? undefined : "grayscale(100%) brightness(0.6)",
                       }}
                     />
-                  )}
-                </div>
+                    {!isEarned && (
+                      <div
+                        style={{
+                          position: "absolute",
+                          inset: 0,
+                          background: "rgba(0,0,0,0.35)",
+                          borderRadius: 12,
+                        }}
+                      />
+                    )}
+                  </div>
+                </Tooltip>
               );
             })}
           </div>

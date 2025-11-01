@@ -18,6 +18,7 @@ export default defineSchema({
     departmentId: v.optional(v.id("departments")),
     bio: v.optional(v.string()),
     isShowcase: v.optional(v.boolean()),
+    streak: v.optional(v.number()), // Simple numeric streak counter
     socialLinks: v.optional(
       v.array(
         v.object({

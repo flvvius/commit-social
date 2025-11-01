@@ -182,6 +182,17 @@ export const join = mutation({
         interests: [...interests, args.groupId],
       });
     }
+
+    // Badge: Smoke Break (if joining smokers-lounge)
+    try {
+      if ((group as any).slug === "smokers-lounge" || (group as any).name === "Smokers Lounge") {
+        const BADGE = "Smoke Break Crew Badge Design.png";
+        const currentBadges: string[] = ((await ctx.db.get(user._id)) as any)?.badges || [];
+        if (!currentBadges.includes(BADGE)) {
+          await ctx.db.patch(user._id, { badges: [...currentBadges, BADGE] });
+        }
+      }
+    } catch {}
   },
 });
 
