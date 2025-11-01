@@ -9,11 +9,12 @@ export default defineSchema({
   }),
   // Utilizatori
   users: defineTable({
-    clerkId: v.string(), // Clerk user ID for syncing
+    clerkId: v.optional(v.string()), // Clerk user ID for syncing (optional for legacy docs)
     name: v.string(),
     email: v.string(),
     avatarUrl: v.optional(v.string()), // optional
     bannerUrl: v.optional(v.string()), // optional
+    birthday: v.optional(v.string()), // YYYY-MM-DD
     departmentId: v.optional(v.id("departments")),
     bio: v.optional(v.string()),
     isShowcase: v.optional(v.boolean()),

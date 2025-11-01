@@ -1,14 +1,17 @@
 "use client";
 
 import { MessageCircle, Gift } from "lucide-react";
-import { mockBirthdays } from "@/lib/mock-data";
-import { useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "@social-media-app/backend/convex/_generated/api";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export function RightSidebar() {
   const conversations = useQuery(api.messages.getConversations);
+  const birthdays = useQuery(api.users.listUpcomingBirthdays, { days: 7 });
   const recentConversations = conversations?.slice(0, 3) || [];
+  const getOrCreate = useMutation(api.messages.getOrCreateDirectConversation);
+  const router = useRouter();
 
   return (
     <aside className="w-72 border-l border-border bg-background overflow-y-auto">
@@ -19,24 +22,39 @@ export function RightSidebar() {
           Birthdays
         </h3>
         <div className="space-y-2">
-          {mockBirthdays.map((birthday) => (
-            <div key={birthday.name} className="flex items-center gap-2">
-              <img
-                src={birthday.avatar || "/placeholder.svg"}
-                alt={birthday.name}
-                className="h-8 w-8 rounded-full"
-              />
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium text-foreground truncate">
-                  {birthday.name}
-                </p>
-                <p className="text-xs text-muted-foreground">{birthday.date}</p>
+          {(birthdays ?? []).length === 0 ? (
+            <p className="text-xs text-muted-foreground">No upcoming birthdays</p>
+          ) : (
+            (birthdays ?? []).map((u) => (
+              <div key={u._id as any} className="flex items-center gap-2">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={(u as any).avatarUrl || "/placeholder.svg"}
+                  alt={(u as any).name}
+                  className="h-8 w-8 rounded-full object-cover"
+                />
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-medium text-foreground truncate">
+                    {(u as any).name}
+                  </p>
+                  <p className="text-[11px] text-muted-foreground">
+                    {(u as any).isToday ? "Today" : `${(u as any).daysUntil} days`}
+                  </p>
+                </div>
+                <button
+                  className="text-xs bg-primary text-primary-foreground px-2 py-1 rounded hover:opacity-90"
+                  onClick={async () => {
+                    try {
+                      const convId = await getOrCreate({ otherUserId: (u as any)._id });
+                      router.push(`/messages?c=${convId}`);
+                    } catch {}
+                  }}
+                >
+                  Wish
+                </button>
               </div>
-              <button className="text-xs bg-primary text-primary-foreground px-2 py-1 rounded hover:opacity-90">
-                Wish
-              </button>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
 
