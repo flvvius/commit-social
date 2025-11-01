@@ -9,7 +9,6 @@ export default defineSchema({
   }),
   // Utilizatori
   users: defineTable({
-    clerkId: v.string(), // Clerk user ID for syncing
     name: v.string(),
     email: v.string(),
     avatarUrl: v.optional(v.string()), // optional
@@ -27,9 +26,7 @@ export default defineSchema({
     badges: v.optional(v.array(v.string())), // in functie de string sa arate badge-ul ca poza
     interests: v.optional(v.array(v.id("groups"))),
     lastActive: v.optional(v.number()), //  pentru hotsreak
-  })
-    .index("by_email", ["email"])
-    .index("by_clerkId", ["clerkId"]),
+  }).index("by_email", ["email"]),
 
   // Departamente (echivalent subreddits)
   departments: defineTable({
@@ -132,8 +129,9 @@ export default defineSchema({
     participants: v.array(v.id("users")), // array de user IDs
     lastMessageAt: v.optional(v.number()), // pentru sortare
     createdAt: v.number(),
-  }).index("by_lastMessage", ["lastMessageAt"]),
-  // Note: removed by_participant index - use conversationMembers table instead
+  })
+    .index("by_lastMessage", ["lastMessageAt"])
+    .index("by_participant", ["participants"]),
 
   // Mesaje individuale
   messages: defineTable({

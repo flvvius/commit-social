@@ -1,103 +1,55 @@
+import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
-import { mutation, query, internalMutation } from "./_generated/server";
 
-// MUTATION: Sync current user from Clerk to Convex
-export const syncUser = mutation({
-  args: {},
-  handler: async (ctx) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Not authenticated");
-
-    // Check if user already exists
-    const existingUser = await ctx.db
-      .query("users")
-      .withIndex("by_clerkId", (q) => q.eq("clerkId", identity.subject))
-      .first();
-
-    if (existingUser) {
-      // Update user info
-      await ctx.db.patch(existingUser._id, {
-        name: identity.name || identity.email || "Unknown",
-        email: identity.email || "",
-        avatarUrl: identity.pictureUrl,
-        lastActive: Date.now(),
-      });
-      return existingUser._id;
-    }
-
-    // Create new user
-    const userId = await ctx.db.insert("users", {
-      clerkId: identity.subject,
-      name: identity.name || identity.email || "Unknown",
-      email: identity.email || "",
-      avatarUrl: identity.pictureUrl,
-      lastActive: Date.now(),
-    });
-
-    return userId;
-  },
-});
-
-// QUERY: Get current user
-export const getCurrentUser = query({
+export const getMe = query({
   handler: async (ctx) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) return null;
 
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_clerkId", (q) => q.eq("clerkId", identity.subject))
-      .first();
+    const email = identity.email;
+    if (!email) return null;
 
-    return user;
+    // Find by email
+    const existing = await ctx.db
+      .query("users")
+      .withIndex("by_email", (q) => q.eq("email", email))
+      .unique();
+
+    return existing ?? null;
   },
 });
 
-// INTERNAL MUTATION: Upsert user from webhook
-export const upsertFromClerk = internalMutation({
+export const updateProfile = mutation({
   args: {
-    clerkId: v.string(),
-    name: v.string(),
-    email: v.string(),
-    avatarUrl: v.optional(v.string()),
+    bio: v.optional(v.string()),
+    bannerUrl: v.optional(v.string()),
+    socialLinks: v.optional(
+      v.array(
+        v.object({
+          platform: v.string(),
+          url: v.string(),
+        })
+      )
+    ),
   },
   handler: async (ctx, args) => {
-    const existingUser = await ctx.db
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity || !identity.email) throw new Error("Unauthorized");
+
+    const me = await ctx.db
       .query("users")
-      .withIndex("by_clerkId", (q) => q.eq("clerkId", args.clerkId))
-      .first();
+      .withIndex("by_email", (q) => q.eq("email", identity.email!))
+      .unique();
 
-    if (existingUser) {
-      await ctx.db.patch(existingUser._id, {
-        name: args.name,
-        email: args.email,
-        avatarUrl: args.avatarUrl,
-        lastActive: Date.now(),
-      });
-      return existingUser._id;
-    }
+    if (!me) throw new Error("User not found");
 
-    return await ctx.db.insert("users", {
-      clerkId: args.clerkId,
-      name: args.name,
-      email: args.email,
-      avatarUrl: args.avatarUrl,
+    await ctx.db.patch(me._id, {
+      bio: args.bio ?? me.bio,
+      bannerUrl: args.bannerUrl ?? me.bannerUrl,
+      socialLinks: args.socialLinks ?? me.socialLinks,
       lastActive: Date.now(),
     });
-  },
-});
 
-// INTERNAL MUTATION: Delete user from webhook
-export const deleteFromClerk = internalMutation({
-  args: { clerkId: v.string() },
-  handler: async (ctx, args) => {
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_clerkId", (q) => q.eq("clerkId", args.clerkId))
-      .first();
-
-    if (user) {
-      await ctx.db.delete(user._id);
-    }
+    return await ctx.db.get(me._id);
   },
 });
