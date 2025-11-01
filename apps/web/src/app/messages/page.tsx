@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, Suspense } from "react";
 import { useQuery } from "convex/react";
 import { api } from "@social-media-app/backend/convex/_generated/api";
 import { ConversationList } from "@/components/messages/conversation-list";
@@ -8,7 +8,7 @@ import { ChatWindow } from "@/components/messages/chat-window";
 import type { Id } from "@social-media-app/backend/convex/_generated/dataModel";
 import { useSearchParams } from "next/navigation";
 
-export default function MessagesPage() {
+function MessagesContent() {
   const [selectedConversationId, setSelectedConversationId] =
     useState<Id<"conversations"> | null>(null);
   const conversations = useQuery(api.messages.getConversations);
@@ -44,5 +44,19 @@ export default function MessagesPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function MessagesPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex h-[calc(100vh-64px)] border border-border rounded-lg overflow-hidden bg-card">
+        <div className="flex items-center justify-center w-full h-full text-muted-foreground">
+          Loading messages...
+        </div>
+      </div>
+    }>
+      <MessagesContent />
+    </Suspense>
   );
 }
