@@ -79,3 +79,40 @@ export const listRecent = query({
     return results;
   },
 });
+
+export const listMine = query({
+  args: { limit: v.optional(v.number()) },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity || !identity.email) return [];
+
+    const me = await ctx.db
+      .query("users")
+      .withIndex("by_email", (q) => q.eq("email", identity.email!))
+      .unique();
+
+    if (!me) return [];
+
+    const limit = Math.min(Math.max(args.limit ?? 20, 1), 50);
+
+    const posts = await ctx.db
+      .query("posts")
+      .withIndex("by_author", (q) => q.eq("authorId", me._id))
+      .order("desc")
+      .take(limit);
+
+    const results = await Promise.all(
+      posts.map(async (p) => {
+        const author = await ctx.db.get(p.authorId);
+        return {
+          ...p,
+          author: author
+            ? { _id: author._id, name: author.name, avatarUrl: author.avatarUrl }
+            : undefined,
+        };
+      })
+    );
+
+    return results;
+  },
+});
