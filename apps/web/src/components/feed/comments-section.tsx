@@ -7,8 +7,8 @@ import { useUser, SignedIn, SignedOut, SignInButton } from "@clerk/nextjs";
 import { useState } from "react";
 import { toast } from "sonner";
 
-export function CommentsSection({ postId }: { postId: string }) {
-  const comments = useQuery(api.comments.listByPost, { postId: postId as any, limit: 50 });
+export function CommentsSection({ postId, limit = 50 }: { postId: string; limit?: number }) {
+  const comments = useQuery(api.comments.listByPost, { postId: postId as any, limit });
   const createComment = useMutation(api.comments.create);
   const { user } = useUser();
   const [value, setValue] = useState("");
