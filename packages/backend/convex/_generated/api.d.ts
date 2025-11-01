@@ -13,6 +13,7 @@ import type * as messages from "../messages.js";
 import type * as posts from "../posts.js";
 import type * as privateData from "../privateData.js";
 import type * as todos from "../todos.js";
+import type * as users from "../users.js";
 
 import type {
   ApiFromModules,
@@ -34,6 +35,7 @@ declare const fullApi: ApiFromModules<{
   posts: typeof posts;
   privateData: typeof privateData;
   todos: typeof todos;
+  users: typeof users;
 }>;
 declare const fullApiWithMounts: typeof fullApi;
 
