@@ -1,6 +1,17 @@
 "use client";
 
-import { Card, Flex, Avatar, Text, Box, Button, Inset, Separator, Tooltip, Badge } from "@radix-ui/themes";
+import {
+  Card,
+  Flex,
+  Avatar,
+  Text,
+  Box,
+  Button,
+  Inset,
+  Separator,
+  Tooltip,
+  Badge,
+} from "@radix-ui/themes";
 import { useMutation } from "convex/react";
 import { api } from "@social-media-app/backend/convex/_generated/api";
 import { toast } from "sonner";
@@ -12,6 +23,18 @@ type Author = {
   avatarUrl?: string;
 };
 
+type Department = {
+  _id: string;
+  name: string;
+  emoji?: string;
+};
+
+type Group = {
+  _id: string;
+  name: string;
+  emoji?: string;
+};
+
 export type Post = {
   _id: string;
   content: string;
@@ -20,6 +43,8 @@ export type Post = {
   mediaUrls?: string[];
   reactionCounts?: Record<string, number>;
   isShowcase?: boolean;
+  department?: Department;
+  group?: Group;
 };
 
 export function PostCard({ post }: { post: Post }) {
@@ -48,14 +73,32 @@ export function PostCard({ post }: { post: Post }) {
     <Card style={showcaseStyle}>
       <Flex direction="column" gap="2">
         <Flex gap="3" align="center">
-          <Avatar src={post.author?.avatarUrl} fallback={initials || "?"} size="3" />
+          <Avatar
+            src={post.author?.avatarUrl}
+            fallback={initials || "?"}
+            size="3"
+          />
           <Box>
             <Text as="div" weight="medium">
               {post.author?.name ?? "Unknown"}
             </Text>
-            <Text as="div" size="1" color="gray">
-              {time}
-            </Text>
+            <Flex align="center" gap="2">
+              <Text as="div" size="1" color="gray">
+                {time}
+              </Text>
+              {/* Department Badge */}
+              {post.department && (
+                <Badge size="1" variant="soft" color="blue">
+                  {post.department.emoji} {post.department.name}
+                </Badge>
+              )}
+              {/* Group Badge */}
+              {post.group && (
+                <Badge size="1" variant="soft" color="green">
+                  {post.group.emoji} {post.group.name}
+                </Badge>
+              )}
+            </Flex>
           </Box>
           {post.isShowcase && (
             <Badge color="amber" radius="full" ml="auto">
@@ -76,9 +119,25 @@ export function PostCard({ post }: { post: Post }) {
               }}
             >
               {post.mediaUrls.map((url, i) => (
-                <div key={i} style={{ width: "100%", aspectRatio: "1/1", overflow: "hidden", borderRadius: 8 }}>
+                <div
+                  key={i}
+                  style={{
+                    width: "100%",
+                    aspectRatio: "1/1",
+                    overflow: "hidden",
+                    borderRadius: 8,
+                  }}
+                >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={url} alt={`image-${i}`} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  <img
+                    src={url}
+                    alt={`image-${i}`}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                    }}
+                  />
                 </div>
               ))}
             </div>
@@ -94,13 +153,17 @@ export function PostCard({ post }: { post: Post }) {
                   size="2"
                   onClick={async () => {
                     try {
-                      await addReaction({ postId: post._id as any, emojiName: name });
+                      await addReaction({
+                        postId: post._id as any,
+                        emojiName: name,
+                      });
                     } catch (err: any) {
                       toast.error(err?.message ?? "Failed to react");
                     }
                   }}
                 >
-                  {EMOJI_MAP[name]} {post.reactionCounts?.[name] ? post.reactionCounts[name] : 0}
+                  {EMOJI_MAP[name]}{" "}
+                  {post.reactionCounts?.[name] ? post.reactionCounts[name] : 0}
                 </Button>
               </Tooltip>
             ))}
@@ -112,9 +175,13 @@ export function PostCard({ post }: { post: Post }) {
                 const content = window.prompt("Add a comment:");
                 if (!content) return;
                 try {
-                  const createComment = (await import("convex/react")).useMutation?.(api.comments.create);
+                  const createComment = (
+                    await import("convex/react")
+                  ).useMutation?.(api.comments.create);
                   // Fallback: if hook can't be used dynamically, just toast guidance
-                  toast.message("Comment UI not fully wired in this build. TODO: implement inline.");
+                  toast.message(
+                    "Comment UI not fully wired in this build. TODO: implement inline."
+                  );
                 } catch {}
               }}
             >
@@ -136,7 +203,10 @@ export function PostCard({ post }: { post: Post }) {
             >
               Share
             </Button>
-            <Button variant="ghost" onClick={() => toast.message("Award coming soon ✨")}>
+            <Button
+              variant="ghost"
+              onClick={() => toast.message("Award coming soon ✨")}
+            >
               Award
             </Button>
           </Flex>

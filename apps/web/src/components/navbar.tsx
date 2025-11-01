@@ -6,6 +6,7 @@ import Link from "next/link";
 import { UserButton, useUser } from "@clerk/nextjs";
 import { useQuery } from "convex/react";
 import { api } from "@social-media-app/backend/convex/_generated/api";
+import { SeedButton } from "./seed-button";
 
 export function Navbar() {
   const [searchOpen, setSearchOpen] = useState(false);
@@ -42,6 +43,7 @@ export function Navbar() {
 
         {/* Right Actions */}
         <div className="flex items-center gap-4">
+          <SeedButton />
           <button
             className="p-2 hover:bg-muted rounded-lg transition-colors"
             title="Notifications"

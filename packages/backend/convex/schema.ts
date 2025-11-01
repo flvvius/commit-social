@@ -35,19 +35,27 @@ export default defineSchema({
   // Departamente (echivalent subreddits)
   departments: defineTable({
     name: v.string(),
+    slug: v.string(), // URL-friendly name
+    emoji: v.optional(v.string()), // Visual icon
     description: v.optional(v.string()),
     members: v.optional(v.array(v.id("users"))),
     createdAt: v.number(),
-  }).index("by_name", ["name"]),
+  })
+    .index("by_name", ["name"])
+    .index("by_slug", ["slug"]),
 
   // Grupuri / Cluburi (pe interese)
   groups: defineTable({
     name: v.string(),
+    slug: v.string(), // URL-friendly name
+    emoji: v.optional(v.string()), // Visual icon
     description: v.optional(v.string()),
     iconUrl: v.optional(v.string()),
     members: v.optional(v.array(v.id("users"))),
     createdAt: v.number(),
-  }).index("by_name", ["name"]),
+  })
+    .index("by_name", ["name"])
+    .index("by_slug", ["slug"]),
 
   // Postări
   posts: defineTable({

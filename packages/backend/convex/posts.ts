@@ -83,12 +83,38 @@ export const create = mutation({
 });
 
 export const listRecent = query({
-  args: { limit: v.optional(v.number()) },
+  args: { 
+    limit: v.optional(v.number()),
+    departmentId: v.optional(v.id("departments")),
+    groupId: v.optional(v.id("groups")),
+  },
   handler: async (ctx, args) => {
     const limit = Math.min(Math.max(args.limit ?? 20, 1), 50);
-    const posts = await ctx.db.query("posts").order("desc").take(limit);
+    
+    let posts;
+    
+    // Filter by department
+    if (args.departmentId) {
+      posts = await ctx.db
+        .query("posts")
+        .withIndex("by_department", (q) => q.eq("departmentId", args.departmentId))
+        .order("desc")
+        .take(limit);
+    } 
+    // Filter by group
+    else if (args.groupId) {
+      posts = await ctx.db
+        .query("posts")
+        .withIndex("by_group", (q) => q.eq("groupId", args.groupId))
+        .order("desc")
+        .take(limit);
+    } 
+    // All posts
+    else {
+      posts = await ctx.db.query("posts").order("desc").take(limit);
+    }
 
-    // Attach author info for convenience
+    // Attach author, department, and group info
     const results = await Promise.all(
       posts.map(async (p) => {
         const author = await ctx.db.get(p.authorId);
@@ -101,10 +127,16 @@ export const listRecent = query({
           if (key) acc[key] = (acc[key] ?? 0) + 1;
           return acc;
         }, {});
+        
+        const department = p.departmentId ? await ctx.db.get(p.departmentId) : null;
+        const group = p.groupId ? await ctx.db.get(p.groupId) : null;
+        
         return {
           ...p,
           author: author ? { _id: author._id, name: author.name, avatarUrl: author.avatarUrl } : undefined,
           reactionCounts,
+          department: department ? { _id: department._id, name: department.name, emoji: department.emoji } : undefined,
+          group: group ? { _id: group._id, name: group.name, emoji: group.emoji } : undefined,
         };
       })
     );
