@@ -1,118 +1,134 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
+
 export default defineSchema({
-  // 1️⃣ Utilizatori
-  users: defineTable({
-    name: v.string(),
-    email: v.string(),
-    avatarUrl: v.optional(v.string()), // optional
-    bannerUrl: v.optional(v.string()), // optional
-    departmentId: v.optional(v.id("departments")),
-    bio: v.optional(v.string()),
-    socialLinks: v.optional(
-      v.array(
-        v.object({
-          platform: v.string(),
-          url: v.string(),
-        })
-      )
-    ),
-    badges: v.optional(v.array(v.string())), // in functie de string sa arate badge-ul ca poza
-    interests: v.optional(v.array(v.id("groups"))),
-    lastActive: v.optional(v.number()), //  pentru hotsreak
-  }).index("by_email", ["email"]),
+ // Utilizatori
+ users: defineTable({
+   name: v.string(),
+   email: v.string(),
+   avatarUrl: v.optional(v.string()), // optional
+   bannerUrl: v.optional(v.string()), // optional
+   departmentId: v.optional(v.id("departments")),
+   bio: v.optional(v.string()),
+   socialLinks: v.optional(
+     v.array(
+       v.object({
+         platform: v.string(),
+         url: v.string(),
+       })
+     )
+   ),
+   badges: v.optional(v.array(v.string())), // in functie de string sa arate badge-ul ca poza
+   interests: v.optional(v.array(v.id("groups"))),
+   lastActive: v.optional(v.number()), //  pentru hotsreak
+ }).index("by_email", ["email"]),
 
-  // Departamente (echivalent subreddits)
-  departments: defineTable({
-    name: v.string(),
-    description: v.optional(v.string()),
-    members: v.optional(v.array(v.id("users"))),
-    createdAt: v.number(),
-  }).index("by_name", ["name"]),
 
-  // Grupuri / Cluburi (pe interese)
-  groups: defineTable({
-    name: v.string(),
-    description: v.optional(v.string()),
-    iconUrl: v.optional(v.string()),
-    members: v.optional(v.array(v.id("users"))),
-    createdAt: v.number(),
-  }).index("by_name", ["name"]),
+ // Departamente (echivalent subreddits)
+ departments: defineTable({
+   name: v.string(),
+   description: v.optional(v.string()),
+   members: v.optional(v.array(v.id("users"))),
+   createdAt: v.number(),
+ }).index("by_name", ["name"]),
 
-  // Postări
-  posts: defineTable({
-    authorId: v.id("users"),
-    departmentId: v.optional(v.id("departments")),
-    groupId: v.optional(v.id("groups")),
-    type: v.string(), // "text" | "image" | "poll" | "collab"
-    content: v.string(),
-    mediaUrls: v.optional(v.array(v.string())), // nu ii vad sensul
-    tags: v.optional(v.array(v.id("tags"))),
-    collabId: v.optional(v.id("collaborations")),
-    createdAt: v.number(),
-    updatedAt: v.optional(v.number()),
-  })
-    .index("by_author", ["authorId"])
-    .index("by_department", ["departmentId"])
-    .index("by_group", ["groupId"]),
 
-  // Comentarii
-  comments: defineTable({
-    postId: v.id("posts"),
-    authorId: v.id("users"),
-    content: v.string(),
-    createdAt: v.number(),
-  }).index("by_post", ["postId"]),
+ // Grupuri / Cluburi (pe interese)
+ groups: defineTable({
+   name: v.string(),
+   description: v.optional(v.string()),
+   iconUrl: v.optional(v.string()),
+   members: v.optional(v.array(v.id("users"))),
+   createdAt: v.number(),
+ }).index("by_name", ["name"]),
 
-  // Reacții (emoji-uri / poze)
-  reactions: defineTable({
-    postId: v.id("posts"),
-    userId: v.id("users"),
-    emoji: v.string(), // ex: "🔥", "😂", "❤️"
-    createdAt: v.number(),
-  }).index("by_post", ["postId"]),
 
-  // Tag-uri
-  tags: defineTable({
-    name: v.string(),
-  }).index("by_name", ["name"]),
+ // Postări
+ posts: defineTable({
+   authorId: v.id("users"),
+   departmentId: v.optional(v.id("departments")),
+   groupId: v.optional(v.id("groups")),
+   type: v.string(), // "text" | "image" | "collab"
+   content: v.string(),
+   mediaUrls: v.optional(v.array(v.string())), // nu ii vad sensul
+   tags: v.optional(v.array(v.id("tags"))),
+   collabId: v.optional(v.id("collaborations")),
+   createdAt: v.number(),
+   updatedAt: v.optional(v.number()),
+ })
+   .index("by_author", ["authorId"])
+   .index("by_department", ["departmentId"])
+   .index("by_group", ["groupId"]),
 
-  // Quizuri zilnice / Daily game
-  quizzes: defineTable({
-    question: v.string(),
-    answers: v.array(v.string()),
-    correctAnswer: v.number(),
-    date: v.string(), // ex: "2025-11-01"
-  }).index("by_date", ["date"]),
 
-  // Streaks (de răspuns la întrebări)
-  streaks: defineTable({
-    userId: v.id("users"),
-    currentStreak: v.number(),
-    lastAnsweredDate: v.string(),
-  }).index("by_user", ["userId"]),
+ // Comentarii
+ comments: defineTable({
+   postId: v.id("posts"),
+   authorId: v.id("users"),
+   content: v.string(),
+   createdAt: v.number(),
+ }).index("by_post", ["postId"]),
 
-  // Notificări (inclusiv pentru “hai la țigară”)
-  notifications: defineTable({
-    userId: v.id("users"),
-    type: v.string(), // "comment", "reaction", "cigarette_call", etc.
-    message: v.string(),
-    createdAt: v.number(),
-    read: v.boolean(),
-  }).index("by_user", ["userId"]),
 
-  // Zile de naștere
-  birthdays: defineTable({
-    userId: v.id("users"),
-    date: v.string(), // ex: "YYYY-MM-DD"
-  }),
+ // Reacții (emoji-uri / poze)
+ reactions: defineTable({
+   postId: v.id("posts"),
+   userId: v.id("users"),
+   type: v.string(), // “emoji” | “poza”
+   emoji: v.optional(v.string()), // ex: "🔥", "😂", "❤️"
+   pozaURL: v.optional(v.string()),
+   createdAt: v.number(),
+ }).index("by_post", ["postId"]),
 
-  // Postări colaborative
-  collaborations: defineTable({
-    title: v.string(),
-    participants: v.array(v.id("users")),
-    postIds: v.optional(v.array(v.id("posts"))),
-    createdAt: v.number(),
-  }),
+
+ // Tag-uri
+ tags: defineTable({
+   name: v.string(),
+ }).index("by_name", ["name"]),
+
+
+ // Quizuri zilnice / Daily game
+ quizzes: defineTable({
+   question: v.string(),
+   answers: v.array(v.string()),
+   correctAnswer: v.number(),
+   date: v.string(), // ex: "2025-11-01"
+ }).index("by_date", ["date"]),
+
+
+ // Streaks (de răspuns la întrebări)
+ streaks: defineTable({
+   userId: v.id("users"),
+   currentStreak: v.number(),
+   lastAnsweredDate: v.string(),
+ }).index("by_user", ["userId"]),
+
+
+ // Notificări (inclusiv pentru “hai la țigară”)
+ notifications: defineTable({
+   userId: v.id("users"),
+   type: v.string(), // "comment", "reaction", "cigarette_call", etc.
+   message: v.string(),
+   createdAt: v.number(),
+   read: v.boolean(), // o lasam aici vedem dc
+ }).index("by_user", ["userId"]),
+
+
+ // Zile de naștere
+ birthdays: defineTable({
+   userId: v.id("users"),
+   date: v.string(), // ex: "YYYY-MM-DD"
+ }),
+
+
+ // Postări colaborative
+ collaborations: defineTable({
+   title: v.string(),
+   participants: v.array(v.id("users")),
+   // postIds: v.optional(v.array(v.id("posts"))), nu vad de ce sa avem postIds
+   createdAt: v.number(),
+ }),
 });
+
+
