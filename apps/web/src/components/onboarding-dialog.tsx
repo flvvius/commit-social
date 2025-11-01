@@ -65,13 +65,15 @@ export function OnboardingDialog() {
   return (
     <Dialog.Root open={showOnboarding}>
       <Dialog.Content maxWidth="600px">
-        <Heading size="6" mb="2">
-          Welcome to Commit! 👋
-        </Heading>
-        <Text size="2" color="gray" mb="4">
+        <Dialog.Title>
+          <Heading size="6" mb="2">
+            Welcome to Commit! 👋
+          </Heading>
+        </Dialog.Title>
+        <Dialog.Description size="2" color="gray" mb="4">
           Let's set up your profile. Choose your department and some groups to
           get started.
-        </Text>
+        </Dialog.Description>
 
         {/* Department Selection */}
         <Box mb="4">

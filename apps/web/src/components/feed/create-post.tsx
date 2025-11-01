@@ -66,6 +66,21 @@ export function CreatePost({
   const disabled =
     submitting || (content.trim().length === 0 && files.length === 0);
 
+  // Handle mutually exclusive selection
+  const handleDepartmentChange = (checked: boolean) => {
+    setPostToMyDepartment(!!checked);
+    if (checked) {
+      setSelectedGroup(""); // Clear group when department is selected
+    }
+  };
+
+  const handleGroupChange = (groupId: string) => {
+    setSelectedGroup(groupId);
+    if (groupId) {
+      setPostToMyDepartment(false); // Clear department when group is selected
+    }
+  };
+
   const handleSubmit = async () => {
     if (disabled) return;
     setSubmitting(true);
@@ -170,44 +185,78 @@ export function CreatePost({
                 </SegmentedControl.Item>
               </SegmentedControl.Root>
 
-              {/* Department and Group Selectors */}
-              <Flex gap="3">
-                <Box style={{ flex: 1 }}>
-                  <Flex asChild align="center" gap="2">
-                    <label>
-                      <Checkbox
-                        checked={postToMyDepartment}
-                        onCheckedChange={(checked) =>
-                          setPostToMyDepartment(!!checked)
-                        }
-                      />
-                      <Text size="2">Post to my department</Text>
-                    </label>
-                  </Flex>
-                </Box>
-
-                <Box style={{ flex: 1 }}>
-                  <Text as="label" size="2" weight="bold" mb="1">
-                    Group (optional)
+              {/* Department and Group Selectors - Mutually Exclusive */}
+              <Box>
+                <Flex align="center" justify="between" mb="2">
+                  <Text size="1" color="gray">
+                    Choose where to post (optional):
                   </Text>
-                  <Select.Root
-                    value={selectedGroup || undefined}
-                    onValueChange={(val) => setSelectedGroup(val || "")}
-                  >
-                    <Select.Trigger
-                      placeholder="Select group..."
-                      style={{ width: "100%" }}
-                    />
-                    <Select.Content>
-                      {allGroups?.map((group) => (
-                        <Select.Item key={group._id} value={group._id}>
-                          {group.emoji} {group.name}
-                        </Select.Item>
-                      ))}
-                    </Select.Content>
-                  </Select.Root>
-                </Box>
-              </Flex>
+                  {/* Clear selection button - only show if something is selected */}
+                  {(postToMyDepartment || selectedGroup) && (
+                    <Button
+                      size="1"
+                      variant="ghost"
+                      onClick={() => {
+                        setPostToMyDepartment(false);
+                        setSelectedGroup("");
+                      }}
+                    >
+                      Clear selection
+                    </Button>
+                  )}
+                </Flex>
+                <Flex gap="3">
+                  {/* Only show department checkbox if no group is selected */}
+                  {!selectedGroup && (
+                    <Box style={{ flex: 1 }}>
+                      <Flex asChild align="center" gap="2">
+                        <label style={{ cursor: "pointer" }}>
+                          <Checkbox
+                            checked={postToMyDepartment}
+                            onCheckedChange={(checked) =>
+                              handleDepartmentChange(!!checked)
+                            }
+                          />
+                          <Text size="2">Post to my department</Text>
+                        </label>
+                      </Flex>
+                    </Box>
+                  )}
+
+                  {/* Only show group selector if department is not checked */}
+                  {!postToMyDepartment && (
+                    <Box style={{ flex: 1 }}>
+                      <Select.Root
+                        value={selectedGroup || undefined}
+                        onValueChange={(val) => handleGroupChange(val || "")}
+                      >
+                        <Select.Trigger
+                          placeholder="Post to a group..."
+                          style={{ width: "100%" }}
+                        />
+                        <Select.Content>
+                          {allGroups?.map((group) => (
+                            <Select.Item key={group._id} value={group._id}>
+                              {group.emoji} {group.name}
+                            </Select.Item>
+                          ))}
+                        </Select.Content>
+                      </Select.Root>
+                    </Box>
+                  )}
+                </Flex>
+                
+                {/* Help text explaining the posting destination */}
+                <Text size="1" color="gray" mt="2">
+                  {selectedGroup ? (
+                    <>📢 This post will only be visible to members of the selected group</>
+                  ) : postToMyDepartment ? (
+                    <>🏢 This post will only be visible to your department</>
+                  ) : (
+                    <>🌍 This post will be visible to everyone (global)</>
+                  )}
+                </Text>
+              </Box>
 
               <TextArea
                 value={content}
