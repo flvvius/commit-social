@@ -3,6 +3,7 @@
 import type { Id } from "@social-media-app/backend/convex/_generated/dataModel";
 import { MessageCircle, Search } from "lucide-react";
 import { useState } from "react";
+import { NewMessageDialog } from "./new-message-dialog";
 
 type Conversation = {
   _id: Id<"conversations">;
@@ -58,6 +59,12 @@ export function ConversationList({
       {/* Header */}
       <div className="p-4 border-b border-border">
         <h2 className="text-lg font-semibold text-foreground mb-3">Messages</h2>
+
+        {/* New Message Button */}
+        <div className="mb-3">
+          <NewMessageDialog onConversationCreated={onSelect} />
+        </div>
+
         <div className="relative">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <input
