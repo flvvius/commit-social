@@ -1,18 +1,52 @@
 "use client";
 
 import { Search, Bell, Mail, User } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { UserButton, useUser } from "@clerk/nextjs";
 import { useQuery } from "convex/react";
 import { api } from "@social-media-app/backend/convex/_generated/api";
+import { useRouter, useSearchParams } from "next/navigation";
 // import { SeedButton } from "./seed-button";
 
 export function Navbar() {
-  const [searchOpen, setSearchOpen] = useState(false);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
+  const [debouncedQuery, setDebouncedQuery] = useState(
+    searchParams.get("q") || ""
+  );
 
   const user = useUser();
   const privateData = useQuery(api.privateData.get);
+
+  // Debounce search query with 300ms delay
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(searchQuery);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Update URL when debounced query changes
+  useEffect(() => {
+    if (debouncedQuery.trim()) {
+      router.push(`/feed?q=${encodeURIComponent(debouncedQuery)}`);
+    } else if (searchQuery === "") {
+      router.push("/feed");
+    }
+  }, [debouncedQuery, router, searchQuery]);
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
+
+  const handleSearchClear = () => {
+    setSearchQuery("");
+    setDebouncedQuery("");
+    router.push("/feed");
+  };
 
   return (
     <nav className="sticky top-0 z-50 border-b border-border bg-card shadow-sm">
@@ -34,10 +68,18 @@ export function Navbar() {
             <input
               type="text"
               placeholder="Search posts, people, groups..."
-              className="w-full rounded-lg border border-input bg-background pl-10 pr-4 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-              onFocus={() => setSearchOpen(true)}
-              onBlur={() => setSearchOpen(false)}
+              className="w-full rounded-lg border border-input bg-background pl-10 pr-10 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+              value={searchQuery}
+              onChange={handleSearchChange}
             />
+            {searchQuery && (
+              <button
+                onClick={handleSearchClear}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              >
+                ✕
+              </button>
+            )}
           </div>
         </div>
 

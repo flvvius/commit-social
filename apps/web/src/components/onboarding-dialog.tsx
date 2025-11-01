@@ -11,10 +11,46 @@ import {
   Box,
   Heading,
   Checkbox,
+  TextField,
+  Select,
 } from "@radix-ui/themes";
-import { Building2, Users } from "lucide-react";
+import { Building2, Users, Cake, Briefcase } from "lucide-react";
 import { toast } from "sonner";
 import type { Id } from "@social-media-app/backend/convex/_generated/dataModel";
+
+// Predefined position options
+const POSITION_OPTIONS = [
+  "Software Engineer",
+  "Senior Software Engineer",
+  "Lead Software Engineer",
+  "Principal Engineer",
+  "Engineering Manager",
+  "Product Manager",
+  "Senior Product Manager",
+  "Product Designer",
+  "UX Designer",
+  "UI Designer",
+  "Data Scientist",
+  "Data Analyst",
+  "DevOps Engineer",
+  "QA Engineer",
+  "Frontend Developer",
+  "Backend Developer",
+  "Full Stack Developer",
+  "Mobile Developer",
+  "Marketing Manager",
+  "Sales Manager",
+  "Customer Success Manager",
+  "HR Manager",
+  "Recruiter",
+  "Business Analyst",
+  "Project Manager",
+  "Scrum Master",
+  "Technical Writer",
+  "Content Creator",
+  "Graphic Designer",
+  "Other",
+];
 
 export function OnboardingDialog() {
   const currentUser = useQuery(api.users.getCurrentUser);
@@ -24,6 +60,8 @@ export function OnboardingDialog() {
 
   const [selectedDepartment, setSelectedDepartment] = useState<string>("");
   const [selectedGroups, setSelectedGroups] = useState<string[]>([]);
+  const [birthday, setBirthday] = useState<string>("");
+  const [position, setPosition] = useState<string>("");
   const [submitting, setSubmitting] = useState(false);
 
   // Show dialog if user exists but hasn't selected a department yet
@@ -43,6 +81,8 @@ export function OnboardingDialog() {
       await completeOnboarding({
         departmentId: selectedDepartment as Id<"departments">,
         groupIds: selectedGroups as Id<"groups">[],
+        birthday: birthday || undefined,
+        position: position || undefined,
       });
       toast.success("Welcome to Commit! 🎉");
     } catch (err: any) {
@@ -71,8 +111,7 @@ export function OnboardingDialog() {
           </Heading>
         </Dialog.Title>
         <Dialog.Description size="2" color="gray" mb="4">
-          Let's set up your profile. Choose your department and some groups to
-          get started.
+          Let's set up your profile. Tell us about yourself!
         </Dialog.Description>
 
         {/* Department Selection */}
@@ -108,6 +147,52 @@ export function OnboardingDialog() {
               </button>
             ))}
           </div>
+        </Box>
+
+        {/* Position Dropdown */}
+        <Box mb="4">
+          <Flex align="center" gap="2" mb="3">
+            <Briefcase className="h-4 w-4" />
+            <Text weight="bold" size="3">
+              Your Position (Optional)
+            </Text>
+          </Flex>
+          <Text size="1" color="gray" mb="2">
+            Select your job title or role
+          </Text>
+          <Select.Root value={position} onValueChange={setPosition}>
+            <Select.Trigger
+              placeholder="Select a position"
+              style={{ width: "100%" }}
+            />
+            <Select.Content>
+              {POSITION_OPTIONS.map((pos) => (
+                <Select.Item key={pos} value={pos}>
+                  {pos}
+                </Select.Item>
+              ))}
+            </Select.Content>
+          </Select.Root>
+        </Box>
+
+        {/* Birthday Input */}
+        <Box mb="4">
+          <Flex align="center" gap="2" mb="3">
+            <Cake className="h-4 w-4" />
+            <Text weight="bold" size="3">
+              Your Birthday (Optional)
+            </Text>
+          </Flex>
+          <Text size="1" color="gray" mb="2">
+            We'll celebrate with you! Your coworkers will get a reminder.
+          </Text>
+          <TextField.Root
+            type="date"
+            value={birthday}
+            onChange={(e) => setBirthday(e.target.value)}
+            placeholder="Select your birthday"
+            size="2"
+          />
         </Box>
 
         {/* Groups Selection */}

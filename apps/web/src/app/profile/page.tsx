@@ -19,7 +19,16 @@ import {
   Text,
 } from "@radix-ui/themes";
 import { SignInButton, SignedOut } from "@clerk/nextjs";
-import { Github, Linkedin, Twitter, Globe, Flame, Plus, Trash2, Pencil } from "lucide-react";
+import {
+  Github,
+  Linkedin,
+  Twitter,
+  Globe,
+  Flame,
+  Plus,
+  Trash2,
+  Pencil,
+} from "lucide-react";
 import { PostCard } from "@/components/feed/post-card";
 import { AVAILABLE_BADGES, badgeUrl } from "@/lib/badges";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -97,14 +106,18 @@ export default function ProfilePage() {
   const userBadges = ((user as any).badges ?? []) as string[];
   // Images available under /public/badges
   const badgesToShow = AVAILABLE_BADGES;
-   const earnedBadges = badgesToShow.filter((b) => userBadges.includes(b));
+  const earnedBadges = badgesToShow.filter((b) => userBadges.includes(b));
 
   // (moved useEffect above to avoid breaking Hooks order with early returns)
 
-  const onAddLink = () => setLinksDraft((arr) => [...arr, { platform: "", url: "" }]);
-  const onRemoveLink = (idx: number) => setLinksDraft((arr) => arr.filter((_, i) => i !== idx));
+  const onAddLink = () =>
+    setLinksDraft((arr) => [...arr, { platform: "", url: "" }]);
+  const onRemoveLink = (idx: number) =>
+    setLinksDraft((arr) => arr.filter((_, i) => i !== idx));
   const onChangeLink = (idx: number, key: keyof SocialLink, val: string) =>
-    setLinksDraft((arr) => arr.map((it, i) => (i === idx ? { ...it, [key]: val } : it)));
+    setLinksDraft((arr) =>
+      arr.map((it, i) => (i === idx ? { ...it, [key]: val } : it))
+    );
 
   const onSave = async () => {
     setSaving(true);
@@ -145,18 +158,25 @@ export default function ProfilePage() {
             <Avatar
               size="6"
               src={avatarUrl}
-              fallback={(name || "?")
-                .split(" ")
-                .map((s) => s[0])
-                .slice(0, 2)
-                .join("")
-                .toUpperCase() || "?"}
+              fallback={
+                (name || "?")
+                  .split(" ")
+                  .map((s) => s[0])
+                  .slice(0, 2)
+                  .join("")
+                  .toUpperCase() || "?"
+              }
               style={{ boxShadow: "0 0 0 4px var(--color-panel)" }}
             />
             <Box>
               <Text as="div" size="5" weight="bold">
                 {name}
               </Text>
+              {(user as any).position && (
+                <Text as="div" size="3" color="gray" mb="1">
+                  {(user as any).position}
+                </Text>
+              )}
               {bio && (
                 <Text as="div" color="gray">
                   {bio}
@@ -175,31 +195,51 @@ export default function ProfilePage() {
                   <Separator my="3" size="4" />
                   <Flex direction="column" gap="3">
                     <Box>
-                      <Text size="2" color="gray">Banner URL</Text>
-                      <TextField.Root value={bannerDraft} onChange={(e) => setBannerDraft(e.target.value)} />
+                      <Text size="2" color="gray">
+                        Banner URL
+                      </Text>
+                      <TextField.Root
+                        value={bannerDraft}
+                        onChange={(e) => setBannerDraft(e.target.value)}
+                      />
                     </Box>
                     <Box>
-                      <Text size="2" color="gray">Descriere</Text>
-                      <TextArea value={bioDraft} onChange={(e) => setBioDraft(e.target.value)} />
+                      <Text size="2" color="gray">
+                        Descriere
+                      </Text>
+                      <TextArea
+                        value={bioDraft}
+                        onChange={(e) => setBioDraft(e.target.value)}
+                      />
                     </Box>
                     <Box>
-                      <Text size="2" color="gray">Link-uri sociale</Text>
+                      <Text size="2" color="gray">
+                        Link-uri sociale
+                      </Text>
                       <Flex direction="column" gap="2">
                         {linksDraft.map((lk, i) => (
                           <Flex key={i} align="center" gap="2">
                             <TextField.Root
                               placeholder="Platformă (ex. GitHub)"
                               value={lk.platform}
-                              onChange={(e) => onChangeLink(i, "platform", e.target.value)}
+                              onChange={(e) =>
+                                onChangeLink(i, "platform", e.target.value)
+                              }
                               style={{ minWidth: 140 }}
                             />
                             <TextField.Root
                               placeholder="https://…"
                               value={lk.url}
-                              onChange={(e) => onChangeLink(i, "url", e.target.value)}
+                              onChange={(e) =>
+                                onChangeLink(i, "url", e.target.value)
+                              }
                               style={{ flex: 1 }}
                             />
-                            <Button variant="ghost" color="red" onClick={() => onRemoveLink(i)}>
+                            <Button
+                              variant="ghost"
+                              color="red"
+                              onClick={() => onRemoveLink(i)}
+                            >
                               <Trash2 size={14} />
                             </Button>
                           </Flex>
@@ -210,25 +250,48 @@ export default function ProfilePage() {
                       </Flex>
                     </Box>
                     <Box>
-                      <Text size="2" color="gray">Selectează badge-urile câștigate</Text>
+                      <Text size="2" color="gray">
+                        Selectează badge-urile câștigate
+                      </Text>
                       <div
                         style={{
                           display: "grid",
-                          gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
+                          gridTemplateColumns:
+                            "repeat(auto-fill, minmax(220px, 1fr))",
                           gap: 12,
                         }}
                       >
                         {badgesToShow.map((file) => {
                           const checked = selectedBadges.includes(file);
                           return (
-                            <label key={file} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                            <label
+                              key={file}
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 8,
+                              }}
+                            >
                               {/* eslint-disable-next-line @next/next/no-img-element */}
                               <img
                                 src={badgeUrl(file)}
                                 alt={file}
-                                style={{ width: 36, height: 36, borderRadius: 6, objectFit: "cover" }}
+                                style={{
+                                  width: 36,
+                                  height: 36,
+                                  borderRadius: 6,
+                                  objectFit: "cover",
+                                }}
                               />
-                              <Text size="2" style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                              <Text
+                                size="2"
+                                style={{
+                                  flex: 1,
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
                                 {file.replace(/\.[^.]+$/, "")}
                               </Text>
                               <Checkbox
@@ -237,7 +300,8 @@ export default function ProfilePage() {
                                   const on = Boolean(v);
                                   setSelectedBadges((prev) => {
                                     const set = new Set(prev);
-                                    if (on) set.add(file); else set.delete(file);
+                                    if (on) set.add(file);
+                                    else set.delete(file);
                                     return Array.from(set);
                                   });
                                 }}
@@ -251,7 +315,11 @@ export default function ProfilePage() {
                       <Dialog.Close>
                         <Button variant="soft">Anulează</Button>
                       </Dialog.Close>
-                      <Button onClick={onSave} disabled={saving} loading={saving}>
+                      <Button
+                        onClick={onSave}
+                        disabled={saving}
+                        loading={saving}
+                      >
                         Salvează
                       </Button>
                     </Flex>
@@ -269,12 +337,16 @@ export default function ProfilePage() {
                   <RLink key={i} href={s.url} target="_blank" rel="noreferrer">
                     <Flex align="center" gap="2">
                       <SocialIcon platform={s.platform} />
-                      <Text size="2">{new URL(s.url).hostname.replace("www.", "")}</Text>
+                      <Text size="2">
+                        {new URL(s.url).hostname.replace("www.", "")}
+                      </Text>
                     </Flex>
                   </RLink>
                 ))
               ) : (
-                <Text color="gray">Adaugă-ți link-urile sociale din setări (în curând)</Text>
+                <Text color="gray">
+                  Adaugă-ți link-urile sociale din setări (în curând)
+                </Text>
               )}
             </Flex>
           </Box>
@@ -291,7 +363,9 @@ export default function ProfilePage() {
             <Text color="gray">Se încarcă…</Text>
           ) : (
             <Flex gap="3" wrap="wrap" align="center">
-              <Badge color="orange" radius="full">{(streak as any).currentStreak ?? 0} zile</Badge>
+              <Badge color="orange" radius="full">
+                {(streak as any).currentStreak ?? 0} zile
+              </Badge>
               {(streak as any).lastAnsweredDate && (
                 <Text color="gray" size="2">
                   Ultima activitate: {(streak as any).lastAnsweredDate}
@@ -306,7 +380,9 @@ export default function ProfilePage() {
       <Card>
         <Flex align="center" justify="between" px="3">
           <Text weight="medium">Badge-uri câștigate</Text>
-          <Badge color="green" radius="full">{earnedBadges.length}</Badge>
+          <Badge color="green" radius="full">
+            {earnedBadges.length}
+          </Badge>
         </Flex>
         <Separator my="3" size="4" />
         <Box style={{ paddingLeft: 12, paddingRight: 12, paddingBottom: 12 }}>
@@ -323,7 +399,12 @@ export default function ProfilePage() {
                 <img
                   src={badgeUrl(file)}
                   alt={file.replace(/\.[^.]+$/, "")}
-                  style={{ width: "100%", aspectRatio: "1/1", borderRadius: 12, objectFit: "cover" }}
+                  style={{
+                    width: "100%",
+                    aspectRatio: "1/1",
+                    borderRadius: 12,
+                    objectFit: "cover",
+                  }}
                 />
               </div>
             ))}
@@ -338,7 +419,9 @@ export default function ProfilePage() {
       <Card>
         <Flex align="center" justify="between" px="3">
           <Text weight="medium">Toate badge-urile</Text>
-          <Badge color="gray" radius="full">{badgesToShow.length}</Badge>
+          <Badge color="gray" radius="full">
+            {badgesToShow.length}
+          </Badge>
         </Flex>
         <Separator my="3" size="4" />
         <Box style={{ paddingLeft: 12, paddingRight: 12, paddingBottom: 12 }}>
@@ -362,7 +445,9 @@ export default function ProfilePage() {
                       aspectRatio: "1/1",
                       borderRadius: 12,
                       objectFit: "cover",
-                      filter: isEarned ? undefined : "grayscale(100%) brightness(0.6)",
+                      filter: isEarned
+                        ? undefined
+                        : "grayscale(100%) brightness(0.6)",
                     }}
                   />
                   {!isEarned && (
