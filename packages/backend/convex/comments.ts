@@ -3,7 +3,8 @@ import { v } from "convex/values";
 
 export const create = mutation({
   args: {
-    postId: v.id("posts"),
+    postId: v.optional(v.id("posts")),
+    answerId: v.optional(v.id("answers")),
     content: v.string(),
     parentCommentId: v.optional(v.id("comments")),
   },
@@ -20,8 +21,13 @@ export const create = mutation({
 
     if (!existingUser) throw new Error("User not found");
 
+    if (!args.postId && !args.answerId && !args.parentCommentId) {
+      throw new Error("Missing target for comment");
+    }
+
     const id = await ctx.db.insert("comments", {
       postId: args.postId,
+      answerId: args.answerId,
       authorId: existingUser._id,
       content: args.content,
       parentCommentId: args.parentCommentId,
@@ -73,6 +79,39 @@ export const listByParent = query({
       .withIndex("by_parent", (q) => q.eq("parentCommentId", args.parentCommentId))
       .order("asc")
       .take(limit);
+    const enriched = await Promise.all(
+      comments.map(async (c) => {
+        const author = await ctx.db.get(c.authorId);
+        const reactions = await ctx.db
+          .query("reactions")
+          .withIndex("by_comment", (q) => q.eq("commentId", c._id))
+          .collect();
+        const reactionCounts = reactions.reduce<Record<string, number>>((acc, r) => {
+          const key = (r as any).emojiName ?? (r as any).emoji;
+          if (key) acc[key] = (acc[key] ?? 0) + 1;
+          return acc;
+        }, {});
+        return {
+          ...c,
+          author: author ? { _id: author._id, name: author.name, avatarUrl: author.avatarUrl } : undefined,
+          reactionCounts,
+        };
+      })
+    );
+    return enriched;
+  },
+});
+
+export const listByAnswer = query({
+  args: { answerId: v.id("answers"), limit: v.optional(v.number()) },
+  handler: async (ctx, args) => {
+    const limit = Math.min(Math.max(args.limit ?? 50, 1), 200);
+    const all = await ctx.db
+      .query("comments")
+      .withIndex("by_answer", (q) => q.eq("answerId", args.answerId))
+      .order("asc")
+      .take(limit);
+    const comments = all.filter((c) => !c.parentCommentId);
     const enriched = await Promise.all(
       comments.map(async (c) => {
         const author = await ctx.db.get(c.authorId);

@@ -1,12 +1,12 @@
 "use client";
 
-import { ChevronDown, Flame, Plus } from "lucide-react";
+import { ChevronDown, Flame, Plus, MessageCircleQuestionMark } from "lucide-react";
 import { mockQuiz } from "@/lib/mock-data";
 import { useState } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@social-media-app/backend/convex/_generated/api";
 import { CreateGroupDialog } from "./groups/create-group-dialog";
-import { Button, Flex, Text, Box } from "@radix-ui/themes";
+import { Button, Flex, Text, Box, Link } from "@radix-ui/themes";
 import { toast } from "sonner";
 
 export function LeftSidebar() {
@@ -35,17 +35,19 @@ export function LeftSidebar() {
   };
 
   return (
-    <aside className="w-64 border-r border-border bg-background overflow-y-auto flex flex-col">
+    <aside>
       {/* Groups Section */}
+
       <div className="p-4 border-b border-border">
+        <Box>
+          <Button><MessageCircleQuestionMark/> <a href="/questions"  color="gray">Ask a Question</a></Button>
+        </Box>
         <button
           onClick={() => setGroupsExpanded(!groupsExpanded)}
           className="flex w-full items-center justify-between gap-2 font-semibold text-foreground hover:bg-muted px-2 py-1 rounded"
         >
           <span className="text-sm">Your Groups</span>
-          <ChevronDown
-            className={`h-4 w-4 transition-transform ${groupsExpanded ? "" : "-rotate-90"}`}
-          />
+          <ChevronDown className={`h-4 w-4 transition-transform ${groupsExpanded ? "" : "-rotate-90"}`} />
         </button>
 
         {groupsExpanded && (
@@ -75,9 +77,7 @@ export function LeftSidebar() {
 
       {/* Browse All Groups */}
       <div className="p-4 border-b border-border">
-        <h3 className="text-sm font-semibold text-foreground mb-3">
-          Discover Groups
-        </h3>
+        <h3 className="text-sm font-semibold text-foreground mb-3">Discover Groups</h3>
         <div className="space-y-2 max-h-64 overflow-y-auto">
           {allGroups
             ?.filter((g) => !g.isJoined)
@@ -90,11 +90,7 @@ export function LeftSidebar() {
                     {group.name}
                   </Text>
                 </Flex>
-                <Button
-                  size="1"
-                  variant="soft"
-                  onClick={() => handleToggleGroup(group._id, group.isJoined)}
-                >
+                <Button size="1" variant="soft" onClick={() => handleToggleGroup(group._id, group.isJoined)}>
                   Join
                 </Button>
               </Flex>
@@ -109,9 +105,7 @@ export function LeftSidebar() {
             <Flame className="h-4 w-4 text-orange-500" />
             Daily Quiz
           </h3>
-          <p className="text-xs text-muted-foreground mb-3">
-            {mockQuiz.question}
-          </p>
+          <p className="text-xs text-muted-foreground mb-3">{mockQuiz.question}</p>
           <div className="space-y-2">
             {mockQuiz.options.map((option, idx) => (
               <button
@@ -124,11 +118,7 @@ export function LeftSidebar() {
               </button>
             ))}
           </div>
-          {answered && (
-            <p className="text-xs text-green-600 mt-2 font-medium">
-              ✓ Correct! Streak: +1
-            </p>
-          )}
+          {answered && <p className="text-xs text-green-600 mt-2 font-medium">✓ Correct! Streak: +1</p>}
         </div>
       </div>
     </aside>

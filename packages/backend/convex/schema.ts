@@ -18,6 +18,7 @@ export default defineSchema({
     departmentId: v.optional(v.id("departments")),
     bio: v.optional(v.string()),
     isShowcase: v.optional(v.boolean()),
+    points: v.optional(v.number()),
     socialLinks: v.optional(
       v.array(
         v.object({
@@ -87,18 +88,21 @@ export default defineSchema({
 
   // Comentarii
   comments: defineTable({
-    postId: v.id("posts"),
+    postId: v.optional(v.id("posts")),
+    answerId: v.optional(v.id("answers")),
     authorId: v.id("users"),
     content: v.string(),
     parentCommentId: v.optional(v.id("comments")),
     createdAt: v.number(),
   })
     .index("by_post", ["postId"])
+    .index("by_answer", ["answerId"])
     .index("by_parent", ["parentCommentId"]),
 
   // Reacții (emoji-uri / poze)
   reactions: defineTable({
     postId: v.optional(v.id("posts")),
+    answerId: v.optional(v.id("answers")),
     commentId: v.optional(v.id("comments")),
     userId: v.id("users"),
     type: v.string(), // “emoji” | “poza”
@@ -107,7 +111,40 @@ export default defineSchema({
     createdAt: v.number(),
   })
     .index("by_post", ["postId"])
+    .index("by_answer", ["answerId"])
     .index("by_comment", ["commentId"]),
+
+  // Q&A: Questions
+  questions: defineTable({
+    authorId: v.id("users"),
+    title: v.string(),
+    body: v.string(),
+    tags: v.optional(v.array(v.string())),
+    acceptedAnswerId: v.optional(v.id("answers")),
+    createdAt: v.number(),
+    updatedAt: v.optional(v.number()),
+  }).index("by_author", ["authorId"]),
+
+  // Q&A: Answers
+  answers: defineTable({
+    questionId: v.id("questions"),
+    authorId: v.id("users"),
+    content: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.optional(v.number()),
+  })
+    .index("by_question", ["questionId"])
+    .index("by_author", ["authorId"]),
+
+  // Knowledge base documents for AI
+  kbDocs: defineTable({
+    title: v.string(),
+    content: v.string(),
+    tags: v.optional(v.array(v.string())),
+    authorId: v.optional(v.id("users")),
+    createdAt: v.number(),
+    updatedAt: v.optional(v.number()),
+  }).index("by_author", ["authorId"]),
 
   // Tag-uri
   tags: defineTable({
