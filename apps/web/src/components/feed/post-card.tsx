@@ -212,7 +212,7 @@ export function PostCard({ post }: { post: Post }) {
           </Flex>
           <Flex align="center" gap="2">
             <Popover.Root>
-              <Popover.Trigger>
+              <Popover.Trigger asChild>
                 <Button>Share</Button>
               </Popover.Trigger>
               <Popover.Content>
