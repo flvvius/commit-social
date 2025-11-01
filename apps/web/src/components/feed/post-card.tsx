@@ -2,12 +2,11 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Card, Flex, Avatar, Text, Box, Button, Inset, Separator, Tooltip, Badge } from "@radix-ui/themes";
+import { Card, Flex, Avatar, Text, Box, Button, Inset, Separator, Tooltip, Badge, Popover, Blockquote } from "@radix-ui/themes";
 import { useMutation } from "convex/react";
 import { api } from "@social-media-app/backend/convex/_generated/api";
 import { toast } from "sonner";
 import { CommentsSection } from "./comments-section";
-import { Popover } from "radix-ui";
 
 type Author = {
   _id: string;
@@ -38,6 +37,11 @@ export type Post = {
   department?: Department;
   group?: Group;
 };
+
+const handleCopyLink = (postId: string) => {
+  toast.success("Link copied to clipboard");
+  navigator.clipboard.writeText(`${location.origin}/post/${postId}`);
+}
 
 export function PostCard({ post }: { post: Post }) {
   const [index, setIndex] = useState(0);
@@ -211,50 +215,18 @@ export function PostCard({ post }: { post: Post }) {
             ))}
           </Flex>
           <Flex align="center" gap="2">
+            
             <Popover.Root>
-              <Popover.Trigger asChild>
+              <Popover.Trigger>
                 <Button>Share</Button>
               </Popover.Trigger>
               <Popover.Content>
-                <Box>
-                  <Text as="div" size="2" style={{ wordBreak: "break-all" }}>
-                    {`${location.origin}/post/${post._id}`}
-                  </Text>
-                  <Button
-                    size="2"
-                    style={{ marginTop: 10 }}
-                    onClick={async () => {
-                      const link = `${location.origin}/post/${post._id}`;
-                      try {
-                        if (navigator.share) {
-                          await navigator.share({ url: link });
-                        } else {
-                          await navigator.clipboard.writeText(link);
-                          toast.success("Link copied");
-                        }
-                      } catch {}
-                    }}
-                  >
-                    Copy Link
-                  </Button>
-                </Box>
+                <Flex direction="row" gap="2" width="20rem">
+                  <Button onClick={() => handleCopyLink(post._id)}>Copy Link</Button>
+                    <Blockquote size="2" truncate>{`${location.origin}/post/${post._id}`}</Blockquote>
+                </Flex>
               </Popover.Content>
             </Popover.Root>
-            {/* <Button
-              onClick={async () => {
-                const link = `${location.origin}/post/${post._id}`;
-                try {
-                  if (navigator.share) {
-                    await navigator.share({ url: link });
-                  } else {
-                    await navigator.clipboard.writeText(link);
-                    toast.success("Link copied");
-                  }
-                } catch {}
-              }}
-            >
-              Share
-            </Button> */}
             <Button>
               <Link href={`/post/${post._id}`}>Open</Link>
             </Button>

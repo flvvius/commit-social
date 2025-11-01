@@ -2,14 +2,23 @@
 
 import { api } from "@social-media-app/backend/convex/_generated/api";
 import { useMutation, useQuery } from "convex/react";
-import { Box, Button, Flex, Text, TextArea, Avatar } from "@radix-ui/themes";
+import { Box, Button, Flex, Text, TextArea, Avatar, Separator, Tooltip } from "@radix-ui/themes";
 import { useUser, SignedIn, SignedOut, SignInButton } from "@clerk/nextjs";
 import { useState } from "react";
 import { toast } from "sonner";
 
+const EMOJI_MAP: Record<string, string> = {
+  fire: "🔥",
+  heart: "❤️",
+  tada: "🎉",
+  joy: "😂",
+};
+const emojiNames = Object.keys(EMOJI_MAP);
+
 export function CommentsSection({ postId, limit = 50 }: { postId: string; limit?: number }) {
   const comments = useQuery(api.comments.listByPost, { postId: postId as any, limit });
   const createComment = useMutation(api.comments.create);
+  const addReaction = useMutation(api.reactions.add);
   const { user } = useUser();
   const [value, setValue] = useState("");
 
@@ -59,21 +68,111 @@ export function CommentsSection({ postId, limit = 50 }: { postId: string; limit?
         ) : comments.length === 0 ? (
           <Text color="gray">No comments yet</Text>
         ) : (
-          <Flex direction="column" gap="2">
+          <Flex direction="column" gap="3">
             {comments.map((c: any) => (
-              <Flex key={(c as any)._id} align="start" gap="2">
-                <Avatar size="2" src={(c as any).author?.avatarUrl} fallback="?" />
-                <Box>
-                  <Text weight="medium">{(c as any).author?.name ?? "Unknown"}</Text>
-                  <Text as="div" size="2">
-                    {(c as any).content}
-                  </Text>
-                </Box>
-              </Flex>
+              <CommentItem key={(c as any)._id} comment={c} onReply={createComment} onReact={addReaction} />
             ))}
           </Flex>
         )}
       </Box>
+    </Box>
+  );
+}
+
+function CommentItem({
+  comment,
+  onReply,
+  onReact,
+  depth = 0,
+}: {
+  comment: any;
+  onReply: ReturnType<typeof useMutation<typeof api.comments.create>>;
+  onReact: ReturnType<typeof useMutation<typeof api.reactions.add>>;
+  depth?: number;
+}) {
+  const [replying, setReplying] = useState(false);
+  const [text, setText] = useState("");
+  const replies = useQuery(api.comments.listByParent, { parentCommentId: (comment as any)._id as any, limit: 50 });
+
+  return (
+    <Box>
+      <Flex align="start" gap="2">
+        <Avatar size="2" src={(comment as any).author?.avatarUrl} fallback="?" />
+        <Box flexGrow="1">
+          <Text weight="medium">{(comment as any).author?.name ?? "Unknown"}</Text>
+          <Text as="div" size="2">
+            {(comment as any).content}
+          </Text>
+          <Flex align="center" gap="2" mt="1" wrap="wrap">
+            {emojiNames.map((name) => (
+              <Tooltip key={name} content={`React ${EMOJI_MAP[name]}`}>
+                <Button
+                  size="1"
+                  variant="soft"
+                  onClick={async () => {
+                    try {
+                      await onReact({ commentId: (comment as any)._id, emojiName: name } as any);
+                    } catch (err: any) {
+                      toast.error(err?.message ?? "Failed to react");
+                    }
+                  }}
+                >
+                  {EMOJI_MAP[name]} {((comment as any).reactionCounts?.[name] ?? 0) as number}
+                </Button>
+              </Tooltip>
+            ))}
+            <Button size="1" variant="ghost" onClick={() => setReplying((v) => !v)}>
+              Reply
+            </Button>
+          </Flex>
+          {replying && (
+            <Box mt="2">
+              <TextArea
+                placeholder="Write a reply"
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                size="2"
+                style={{ width: "100%" }}
+              />
+              <Flex justify="end" mt="2" gap="2">
+                <Button variant="soft" size="1" onClick={() => setReplying(false)}>
+                  Cancel
+                </Button>
+                <Button
+                  size="1"
+                  disabled={!text.trim()}
+                  onClick={async () => {
+                    try {
+                      await onReply({
+                        postId: (comment as any).postId,
+                        content: text.trim(),
+                        parentCommentId: (comment as any)._id,
+                      } as any);
+                      setText("");
+                      setReplying(false);
+                    } catch (err: any) {
+                      toast.error(err?.message ?? "Failed to reply");
+                    }
+                  }}
+                >
+                  Reply
+                </Button>
+              </Flex>
+            </Box>
+          )}
+        </Box>
+      </Flex>
+      {/* Replies */}
+      {replies && replies.length > 0 && (
+        <Box ml="5" mt="2">
+          <Separator my="2" size="4" />
+          <Flex direction="column" gap="2">
+            {replies.map((r: any) => (
+              <CommentItem key={(r as any)._id} comment={r} onReply={onReply} onReact={onReact} depth={depth + 1} />
+            ))}
+          </Flex>
+        </Box>
+      )}
     </Box>
   );
 }
