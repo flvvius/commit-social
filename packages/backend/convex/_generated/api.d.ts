@@ -19,6 +19,7 @@ import type * as posts from "../posts.js";
 import type * as privateData from "../privateData.js";
 import type * as quizzes from "../quizzes.js";
 import type * as reactions from "../reactions.js";
+import type * as search from "../search.js";
 import type * as seed from "../seed.js";
 import type * as streaks from "../streaks.js";
 import type * as todos from "../todos.js";
@@ -50,6 +51,7 @@ declare const fullApi: ApiFromModules<{
   privateData: typeof privateData;
   quizzes: typeof quizzes;
   reactions: typeof reactions;
+  search: typeof search;
   seed: typeof seed;
   streaks: typeof streaks;
   todos: typeof todos;

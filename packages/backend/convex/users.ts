@@ -247,6 +247,8 @@ export const completeOnboarding = mutation({
   args: {
     departmentId: v.id("departments"),
     groupIds: v.array(v.id("groups")),
+    birthday: v.optional(v.string()), // YYYY-MM-DD
+    position: v.optional(v.string()), // Job title/position
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
@@ -259,10 +261,12 @@ export const completeOnboarding = mutation({
 
     if (!user) throw new Error("User not found");
 
-    // Update user's department
+    // Update user's department, groups, birthday, and position
     await ctx.db.patch(user._id, {
       departmentId: args.departmentId,
       interests: args.groupIds,
+      ...(args.birthday ? { birthday: args.birthday } : {}),
+      ...(args.position ? { position: args.position } : {}),
     });
 
     // Add user to department members

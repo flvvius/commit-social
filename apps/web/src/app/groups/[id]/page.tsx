@@ -2,7 +2,15 @@
 
 import { useQuery } from "convex/react";
 import { api } from "@social-media-app/backend/convex/_generated/api";
-import { Flex, Text, Box, Button, Heading, Avatar, Dialog } from "@radix-ui/themes";
+import {
+  Flex,
+  Text,
+  Box,
+  Button,
+  Heading,
+  Avatar,
+  Dialog,
+} from "@radix-ui/themes";
 import { PostCard } from "@/components/feed/post-card";
 import { CreatePost } from "@/components/feed/create-post";
 import { ArrowLeft, Users } from "lucide-react";
@@ -104,7 +112,11 @@ export default function GroupPage() {
             All members of {group.name}
           </Dialog.Description>
 
-          <Flex direction="column" gap="2" style={{ maxHeight: "400px", overflowY: "auto" }}>
+          <Flex
+            direction="column"
+            gap="2"
+            style={{ maxHeight: "400px", overflowY: "auto" }}
+          >
             {members.length === 0 ? (
               <Text size="2" color="gray">
                 No members yet
@@ -135,18 +147,26 @@ export default function GroupPage() {
                       src={member.avatarUrl || undefined}
                       fallback={member.name.charAt(0).toUpperCase()}
                     />
-                    <Flex direction="column" gap="1" style={{ flex: 1, minWidth: 0 }}>
+                    <Flex
+                      direction="column"
+                      gap="1"
+                      style={{ flex: 1, minWidth: 0 }}
+                    >
                       <Text size="2" weight="medium">
                         {member.name}
                       </Text>
                       {member.bio && (
-                        <Text size="1" color="gray" style={{
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          display: "-webkit-box",
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: "vertical",
-                        }}>
+                        <Text
+                          size="1"
+                          color="gray"
+                          style={{
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            display: "-webkit-box",
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: "vertical",
+                          }}
+                        >
                           {member.bio}
                         </Text>
                       )}

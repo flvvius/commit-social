@@ -15,6 +15,7 @@ export default defineSchema({
     avatarUrl: v.optional(v.string()), // optional
     bannerUrl: v.optional(v.string()), // optional
     birthday: v.optional(v.string()), // YYYY-MM-DD
+    position: v.optional(v.string()), // Job title/position
     departmentId: v.optional(v.id("departments")),
     bio: v.optional(v.string()),
     isShowcase: v.optional(v.boolean()),

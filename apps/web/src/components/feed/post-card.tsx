@@ -2,7 +2,20 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Card, Flex, Avatar, Text, Box, Button, Inset, Separator, Tooltip, Badge, Popover, Blockquote } from "@radix-ui/themes";
+import {
+  Card,
+  Flex,
+  Avatar,
+  Text,
+  Box,
+  Button,
+  Inset,
+  Separator,
+  Tooltip,
+  Badge,
+  Popover,
+  Blockquote,
+} from "@radix-ui/themes";
 import { useMutation } from "convex/react";
 import { api } from "@social-media-app/backend/convex/_generated/api";
 import { toast } from "sonner";
@@ -12,6 +25,7 @@ type Author = {
   _id: string;
   name?: string;
   avatarUrl?: string;
+  position?: string;
 };
 
 type Department = {
@@ -41,7 +55,7 @@ export type Post = {
 const handleCopyLink = (postId: string) => {
   toast.success("Link copied to clipboard");
   navigator.clipboard.writeText(`${location.origin}/post/${postId}`);
-}
+};
 
 export function PostCard({ post }: { post: Post }) {
   const [index, setIndex] = useState(0);
@@ -55,7 +69,8 @@ export function PostCard({ post }: { post: Post }) {
   const urls = useMemo(() => {
     const fromUrls = post.mediaUrls ?? [];
     // Fallback if media (with captions) exists in the payload
-    const fromMedia: string[] = (post as any)?.media?.map((m: any) => m?.url).filter(Boolean) ?? [];
+    const fromMedia: string[] =
+      (post as any)?.media?.map((m: any) => m?.url).filter(Boolean) ?? [];
     return (fromUrls.length ? fromUrls : fromMedia) as string[];
   }, [post]);
 
@@ -82,11 +97,20 @@ export function PostCard({ post }: { post: Post }) {
     <Card style={showcaseStyle}>
       <Flex direction="column" gap="2">
         <Flex gap="3" align="center">
-          <Avatar src={post.author?.avatarUrl} fallback={initials || "?"} size="3" />
+          <Avatar
+            src={post.author?.avatarUrl}
+            fallback={initials || "?"}
+            size="3"
+          />
           <Box>
             <Text as="div" weight="medium">
               {post.author?.name ?? "Unknown"}
             </Text>
+            {post.author?.position && (
+              <Text as="div" size="1" color="gray">
+                {post.author.position}
+              </Text>
+            )}
             <Flex align="center" gap="2">
               <Text as="div" size="1" color="gray">
                 {time}
@@ -116,25 +140,47 @@ export function PostCard({ post }: { post: Post }) {
         </Box>
         {!!urls?.length && (
           <Inset>
-            <Box style={{ position: "relative", width: "100%", height: 520, overflow: "hidden", borderRadius: 8 }}>
+            <Box
+              style={{
+                position: "relative",
+                width: "100%",
+                height: 520,
+                overflow: "hidden",
+                borderRadius: 8,
+              }}
+            >
               {/* Current image */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={urls[index]}
                 alt={`image-${index}`}
-                style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                  display: "block",
+                }}
               />
 
               {/* Left control */}
               {urls.length > 1 && (
-                <Box style={{ position: "absolute", left: 8, top: "50%", transform: "translateY(-50%)" }}>
+                <Box
+                  style={{
+                    position: "absolute",
+                    left: 8,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                  }}
+                >
                   <Button
                     radius="full"
                     variant="solid"
                     size="2"
                     onClick={(e) => {
                       e.stopPropagation();
-                      setIndex((prev) => (prev - 1 + urls.length) % urls.length);
+                      setIndex(
+                        (prev) => (prev - 1 + urls.length) % urls.length
+                      );
                     }}
                     aria-label="Previous image"
                   >
@@ -145,7 +191,14 @@ export function PostCard({ post }: { post: Post }) {
 
               {/* Right control */}
               {urls.length > 1 && (
-                <Box style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)" }}>
+                <Box
+                  style={{
+                    position: "absolute",
+                    right: 8,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                  }}
+                >
                   <Button
                     radius="full"
                     variant="solid"
@@ -182,7 +235,9 @@ export function PostCard({ post }: { post: Post }) {
                       aria-label={`Go to image ${i + 1}`}
                     >
                       {/* small dot */}
-                      <Box style={{ width: 8, height: 8, borderRadius: 9999 }} />
+                      <Box
+                        style={{ width: 8, height: 8, borderRadius: 9999 }}
+                      />
                     </Button>
                   ))}
                 </Flex>
@@ -209,28 +264,35 @@ export function PostCard({ post }: { post: Post }) {
                     }
                   }}
                 >
-                  {EMOJI_MAP[name]} {post.reactionCounts?.[name] ? post.reactionCounts[name] : 0}
+                  {EMOJI_MAP[name]}{" "}
+                  {post.reactionCounts?.[name] ? post.reactionCounts[name] : 0}
                 </Button>
               </Tooltip>
             ))}
           </Flex>
           <Flex align="center" gap="2">
-            
             <Popover.Root>
               <Popover.Trigger>
                 <Button>Share</Button>
               </Popover.Trigger>
               <Popover.Content>
                 <Flex direction="row" gap="2" width="20rem">
-                  <Button onClick={() => handleCopyLink(post._id)}>Copy Link</Button>
-                    <Blockquote size="2" truncate>{`${location.origin}/post/${post._id}`}</Blockquote>
+                  <Button onClick={() => handleCopyLink(post._id)}>
+                    Copy Link
+                  </Button>
+                  <Blockquote
+                    size="2"
+                    truncate
+                  >{`${location.origin}/post/${post._id}`}</Blockquote>
                 </Flex>
               </Popover.Content>
             </Popover.Root>
             <Button>
               <Link href={`/post/${post._id}`}>Open</Link>
             </Button>
-            <Button onClick={() => toast.message("Award coming soon ✨")}>Award</Button>
+            <Button onClick={() => toast.message("Award coming soon ✨")}>
+              Award
+            </Button>
           </Flex>
         </Flex>
         <Separator my="2" size="4" />

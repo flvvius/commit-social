@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo } from "react"; // Removed useEffect, as debug logs are gone
 import { useQuery } from "convex/react";
 import { api } from "@social-media-app/backend/convex/_generated/api";
 import {
@@ -132,12 +132,19 @@ export default function UserProfilePage() {
               <Text as="div" size="5" weight="bold">
                 {name}
               </Text>
+              {/* This 'position' was in the left file but missing from the right */}
+              {(user as any).position && (
+                <Text as="div" size="3" color="gray" mb="1">
+                  {(user as any).position}
+                </Text>
+              )}
               {bio && (
                 <Text as="div" color="gray">
                   {bio}
                 </Text>
               )}
             </Box>
+            {/* This 'Edit Profile' button was in the left file but missing from the right */}
             {isOwnProfile && (
               <Box ml="auto">
                 <Link href="/profile">
@@ -212,7 +219,7 @@ export default function UserProfilePage() {
         </Card>
       )}
 
-      {/* Streak - only show for own profile or if we have data */}
+      {/* Streak - Logic from right (and left) */}
       {isOwnProfile && (
         <Card>
           <Flex align="center" gap="3" px="3" py="2">
@@ -237,7 +244,7 @@ export default function UserProfilePage() {
         </Card>
       )}
 
-      {/* Badges - Earned */}
+      {/* Badges - Earned - Logic from right (and left) */}
       <Card>
         <Flex align="center" justify="between" px="3">
           <Text weight="medium">Badges Earned</Text>
@@ -277,7 +284,7 @@ export default function UserProfilePage() {
         </Box>
       </Card>
 
-      {/* Badges - All */}
+      {/* Badges - All - Logic from right (and left) */}
       <Card>
         <Flex align="center" justify="between" px="3">
           <Text weight="medium">All Badges</Text>

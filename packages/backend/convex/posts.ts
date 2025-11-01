@@ -204,6 +204,7 @@ export const listRecent = query({
                 _id: author._id,
                 name: author.name,
                 avatarUrl: author.avatarUrl,
+                position: (author as any).position,
               }
             : undefined,
           reactionCounts,
@@ -236,15 +237,20 @@ export const get = query({
       .query("reactions")
       .withIndex("by_post", (q) => q.eq("postId", post._id))
       .collect();
-    const reactionCounts = reactions.reduce<Record<string, number>>((acc, r) => {
-      const key = (r as any).emojiName ?? (r as any).emoji; // fallback for older docs
-      if (key) acc[key] = (acc[key] ?? 0) + 1;
-      return acc;
-    }, {});
+    const reactionCounts = reactions.reduce<Record<string, number>>(
+      (acc, r) => {
+        const key = (r as any).emojiName ?? (r as any).emoji; // fallback for older docs
+        if (key) acc[key] = (acc[key] ?? 0) + 1;
+        return acc;
+      },
+      {}
+    );
 
     return {
       ...post,
-      author: author ? { _id: author._id, name: author.name, avatarUrl: author.avatarUrl } : undefined,
+      author: author
+        ? { _id: author._id, name: author.name, avatarUrl: author.avatarUrl }
+        : undefined,
       reactionCounts,
     } as any;
   },
