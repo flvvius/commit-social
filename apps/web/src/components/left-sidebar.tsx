@@ -42,7 +42,7 @@ export function LeftSidebar() {
   };
 
   return (
-    <aside>
+    <aside className="sticky top-[var(--nav-offset)] h-[calc(100vh-var(--nav-offset))] overflow-y-auto">
       {/* Groups Section */}
 
       <div className="p-4 border-b border-border">

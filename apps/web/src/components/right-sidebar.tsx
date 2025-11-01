@@ -22,7 +22,7 @@ export function RightSidebar() {
   );
 
   return (
-    <aside className="w-full border-l border-border bg-background overflow-y-auto">
+    <aside className="w-full border-l border-border bg-background sticky top-[var(--nav-offset)] h-[calc(100vh-var(--nav-offset))] overflow-y-auto">
       {/* Let's go smoke - only show if user is in smokers lounge */}
       {isInSmokersLounge && (
         <div className="p-4 border-b border-border">
