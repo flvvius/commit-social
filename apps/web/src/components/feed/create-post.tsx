@@ -32,6 +32,7 @@ import { toast } from "sonner";
 type CreatePostProps = {
   placeholder?: string;
   onCreated?: () => void;
+  defaultGroupId?: Id<"groups">;
 };
 registerPlugin(
   FilePondPluginFileValidateType,
@@ -42,6 +43,7 @@ registerPlugin(
 export function CreatePost({
   placeholder = "Share something...",
   onCreated,
+  defaultGroupId,
 }: CreatePostProps) {
   const { user } = useUser();
   const createPost = useMutation(api.posts.create);
@@ -59,9 +61,11 @@ export function CreatePost({
   const [captions, setCaptions] = useState<string[]>([]);
   const [pondFiles, setPondFiles] = useState<any[]>([]);
 
-  // State for posting destination
+  // State for posting destination - initialize with defaultGroupId if provided
   const [postToMyDepartment, setPostToMyDepartment] = useState(false);
-  const [selectedGroup, setSelectedGroup] = useState<string>("");
+  const [selectedGroup, setSelectedGroup] = useState<string>(
+    defaultGroupId || ""
+  );
 
   const disabled =
     submitting || (content.trim().length === 0 && files.length === 0);
@@ -245,11 +249,14 @@ export function CreatePost({
                     </Box>
                   )}
                 </Flex>
-                
+
                 {/* Help text explaining the posting destination */}
                 <Text size="1" color="gray" mt="2">
                   {selectedGroup ? (
-                    <>📢 This post will only be visible to members of the selected group</>
+                    <>
+                      📢 This post will only be visible to members of the
+                      selected group
+                    </>
                   ) : postToMyDepartment ? (
                     <>🏢 This post will only be visible to your department</>
                   ) : (

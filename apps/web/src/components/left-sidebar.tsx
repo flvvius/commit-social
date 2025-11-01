@@ -8,6 +8,7 @@ import { api } from "@social-media-app/backend/convex/_generated/api";
 import { CreateGroupDialog } from "./groups/create-group-dialog";
 import { Button, Flex, Text, Box } from "@radix-ui/themes";
 import { toast } from "sonner";
+import Link from "next/link";
 
 export function LeftSidebar() {
   const [groupsExpanded, setGroupsExpanded] = useState(true);
@@ -56,13 +57,14 @@ export function LeftSidebar() {
               </Text>
             ) : (
               joinedGroups.map((group) => (
-                <button
+                <Link
                   key={group._id}
+                  href={`/groups/${group._id}`}
                   className="w-full text-left px-2 py-2 text-sm rounded hover:bg-muted text-foreground transition-colors flex items-center gap-2"
                 >
                   <span className="text-lg">{group.emoji || "📚"}</span>
                   <span className="truncate">{group.name}</span>
-                </button>
+                </Link>
               ))
             )}
           </div>

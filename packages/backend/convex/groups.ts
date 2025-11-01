@@ -77,6 +77,36 @@ export const get = query({
   },
 });
 
+// QUERY: Get group members with their details
+export const getMembers = query({
+  args: { groupId: v.id("groups") },
+  handler: async (ctx, args) => {
+    const group = await ctx.db.get(args.groupId);
+    if (!group) return [];
+
+    const memberIds = group.members || [];
+
+    // Fetch all member details
+    const members = await Promise.all(
+      memberIds.map(async (memberId) => {
+        const user = await ctx.db.get(memberId);
+        if (!user) return null;
+
+        return {
+          _id: user._id,
+          name: user.name,
+          email: user.email,
+          avatarUrl: user.avatarUrl,
+          bio: user.bio,
+        };
+      })
+    );
+
+    // Filter out any null values (deleted users)
+    return members.filter((m) => m !== null);
+  },
+});
+
 // MUTATION: Create new group
 export const create = mutation({
   args: {
