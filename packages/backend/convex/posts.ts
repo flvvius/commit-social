@@ -112,6 +112,32 @@ export const listRecent = query({
   },
 });
 
+// Fetch a single post by id, with author and reaction counts
+export const get = query({
+  args: { id: v.id("posts") },
+  handler: async (ctx, args) => {
+    const post = await ctx.db.get(args.id);
+    if (!post) return null;
+
+    const author = await ctx.db.get(post.authorId);
+    const reactions = await ctx.db
+      .query("reactions")
+      .withIndex("by_post", (q) => q.eq("postId", post._id))
+      .collect();
+    const reactionCounts = reactions.reduce<Record<string, number>>((acc, r) => {
+      const key = (r as any).emojiName ?? (r as any).emoji; // fallback for older docs
+      if (key) acc[key] = (acc[key] ?? 0) + 1;
+      return acc;
+    }, {});
+
+    return {
+      ...post,
+      author: author ? { _id: author._id, name: author.name, avatarUrl: author.avatarUrl } : undefined,
+      reactionCounts,
+    } as any;
+  },
+});
+
 // Generate a signed upload URL to upload images from the client directly to Convex storage
 export const generateUploadUrl = action({
   args: {},

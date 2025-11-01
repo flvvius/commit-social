@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { Card, Flex, Avatar, Text, Box, Button, Inset, Separator, Tooltip, Badge } from "@radix-ui/themes";
 import { useMutation } from "convex/react";
 import { api } from "@social-media-app/backend/convex/_generated/api";
 import { toast } from "sonner";
 import { CommentsSection } from "./comments-section";
+import { Popover } from "radix-ui";
 
 type Author = {
   _id: string;
@@ -178,24 +180,38 @@ export function PostCard({ post }: { post: Post }) {
             ))}
           </Flex>
           <Flex align="center" gap="2">
-            <Button
-              variant="ghost"
+            <Popover.Root>
+              <Popover.Trigger >
+                <Button>Share</Button>
+              </Popover.Trigger>
+              <Popover.Content>
+                <Box >
+                  <Text as="div" size="2" style={{ wordBreak: "break-all" }}>
+                    {`${location.origin}/post/${post._id}`}
+                  </Text>
+                  <Button
+                    size="2"
+                    style={{ marginTop: 10 }}
+                    onClick={async () => {
+                      const link = `${location.origin}/post/${post._id}`;
+                      try {
+                        if (navigator.share) {
+                          await navigator.share({ url: link });
+                        } else {
+                          await navigator.clipboard.writeText(link);
+                          toast.success("Link copied");
+                        }
+                      } catch {}
+                    }}
+                  >
+                    Copy Link
+                  </Button>
+                </Box>
+              </Popover.Content>
+            </Popover.Root>
+            {/* <Button
               onClick={async () => {
-                const content = window.prompt("Add a comment:");
-                if (!content) return;
-                try {
-                  const createComment = (await import("convex/react")).useMutation?.(api.comments.create);
-                  // Fallback: if hook can't be used dynamically, just toast guidance
-                  toast.message("Comment UI not fully wired in this build. TODO: implement inline.");
-                } catch {}
-              }}
-            >
-              Comment
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={async () => {
-                const link = `${location.origin}/feed#${post._id}`;
+                const link = `${location.origin}/post/${post._id}`;
                 try {
                   if (navigator.share) {
                     await navigator.share({ url: link });
@@ -207,10 +223,11 @@ export function PostCard({ post }: { post: Post }) {
               }}
             >
               Share
+            </Button> */}
+            <Button>
+              <Link href={`/post/${post._id}`}>Open</Link>
             </Button>
-            <Button variant="ghost" onClick={() => toast.message("Award coming soon ✨")}>
-              Award
-            </Button>
+            <Button onClick={() => toast.message("Award coming soon ✨")}>Award</Button>
           </Flex>
         </Flex>
         <Separator my="2" size="4" />
