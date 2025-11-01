@@ -58,8 +58,8 @@ export function LeftSidebar() {
             ) : (
               joinedGroups.map((group) => (
                 <Link
-                  key={group._id}
-                  href={`/groups/${group._id}`}
+                  key={group._id as any}
+                  href={`/groups/${group._id as string}`}
                   className="w-full text-left px-2 py-2 text-sm rounded hover:bg-muted text-foreground transition-colors flex items-center gap-2"
                 >
                   <span className="text-lg">{group.emoji || "📚"}</span>
