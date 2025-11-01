@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { Doc, Id } from "./_generated/dataModel";
+import type { Id } from "./_generated/dataModel";
 
 // MUTATION: Send a new message
 export const sendMessage = mutation({
@@ -276,7 +276,7 @@ export const getAllUsers = query({
 
     // Get all users except current user
     const allUsers = await ctx.db.query("users").collect();
-    
+
     return allUsers.filter((user) => user._id !== currentUser._id);
   },
 });
