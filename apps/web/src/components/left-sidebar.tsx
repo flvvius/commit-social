@@ -8,6 +8,7 @@ import { CreateGroupDialog } from "./groups/create-group-dialog";
 import { Button, Flex, Text, Box } from "@radix-ui/themes";
 import { toast } from "sonner";
 import { DailyQuizCard } from "./games/daily-quiz";
+import Link from "next/link";
 
 export function LeftSidebar() {
   const [groupsExpanded, setGroupsExpanded] = useState(true);
