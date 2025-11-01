@@ -29,7 +29,7 @@ export default function MessagesPage() {
           <ChatWindow conversationId={selectedConversationId} />
         ) : (
           <div className="flex items-center justify-center h-full text-muted-foreground">
-            Select a conversation to start messaging
+            Select a conversation to start messaging!
           </div>
         )}
       </div>
