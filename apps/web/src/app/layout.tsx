@@ -17,7 +17,7 @@ const figTreeSans = Figtree({
 });
 
 export const metadata: Metadata = {
-  title: "Commit", // Updated title
+  title: "Commit",
   description: "A modern social app",
 };
 
@@ -33,42 +33,30 @@ export default function RootLayout({
         <ClerkProvider>
           <Providers>
             {/* Radix Theme component should wrap your entire app */}
-            <Theme >
+            <Theme>
               {/* Onboarding Dialog - Shows on first login */}
               <OnboardingDialog />
 
               {/* 1. TOP NAV / HEADER */}
-              {/* This component sits outside the main grid, spanning the full width. */}
               <Navbar />
 
-              {/* 2. MAIN CONTENT AREA - CHANGED */}
-              {/* We've removed the Box wrapper that had 'maxWidth: "1280px"'. */}
-              {/* The Grid is now the top-level container for the layout. */}
+              {/* 2. MAIN CONTENT AREA */}
               <Grid
-                // Add horizontal padding so sidebars aren't stuck to the very edge
                 px={{ initial: "4", md: "5" }}
-                // Add margin-top to create space below the Header
                 mt="5"
-                // On mobile ('initial'), 1 column.
-                // On medium screens and up ('md'), 3 columns.
                 columns={{ initial: "1fr", md: "250px 1fr 300px" }}
-                gap="5" // Spacing between columns
+                gap="5"
               >
                 {/* COLUMN 1: LEFT SIDEBAR */}
-                {/* This Box is hidden on mobile */}
                 <Box display={{ initial: "none", md: "block" }}>
                   <LeftSidebar />
                 </Box>
 
-                {/* COLUMN 2: MAIN CONTENT (YOUR PAGE) - CHANGED */}
-                {/* This outer Box is the '1fr' grid column. */}
-                {/* We add an *inner* Box to constrain the feed's width. */}
+                {/* COLUMN 2: MAIN CONTENT */}
                 <Box>
                   <Box
                     style={{
-                      // This centers the feed within the '1fr' column
                       margin: "0 auto",
-                      // Set a readable max-width for your feed
                       maxWidth: "720px",
                     }}
                   >
@@ -77,7 +65,6 @@ export default function RootLayout({
                 </Box>
 
                 {/* COLUMN 3: RIGHT SIDEBAR */}
-                {/* This Box is also hidden on mobile */}
                 <Box display={{ initial: "none", md: "block" }}>
                   <RightSidebar />
                 </Box>

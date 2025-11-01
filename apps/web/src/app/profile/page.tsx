@@ -253,7 +253,10 @@ export default function ProfilePage() {
                                 onChangeLink(i, "platform", val)
                               }
                             >
-                              <Select.Trigger placeholder="Platformă" style={{ minWidth: 140 }} />
+                              <Select.Trigger
+                                placeholder="Platformă"
+                                style={{ minWidth: 140 }}
+                              />
                               <Select.Content>
                                 {SOCIAL_PLATFORMS.map((platform) => (
                                   <Select.Item key={platform} value={platform}>
