@@ -12,14 +12,14 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogTrigger,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
+  PopupEditProfile,
+  PopupEditProfileTrigger,
+  PopupEditProfileContent,
+  PopupEditProfileHeader,
+  PopupEditProfileTitle,
+  PopupEditProfileDescription,
+  PopupEditProfileFooter,
+} from "@/components/ui/popup-editprofile";
 import { useMutation } from "convex/react";
 import { PostCard } from "@/components/feed/post-card";
 
@@ -174,18 +174,18 @@ const Profile = () => {
                   <Mail className="mr-2 h-4 w-4" />
                   Message
                 </Button>
-                <Dialog open={open} onOpenChange={setOpen}>
-                  <DialogTrigger asChild>
+                <PopupEditProfile open={open} onOpenChange={setOpen}>
+                  <PopupEditProfileTrigger asChild>
                     <Button size="sm">
                       <Edit className="mr-2 h-4 w-4" />
                       Edit Profile
                     </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Edit profile</DialogTitle>
-                      <DialogDescription>Update your description, social links, and banner image.</DialogDescription>
-                    </DialogHeader>
+                  </PopupEditProfileTrigger>
+                  <PopupEditProfileContent>
+                    <PopupEditProfileHeader>
+                      <PopupEditProfileTitle>Edit profile</PopupEditProfileTitle>
+                      <PopupEditProfileDescription>Update your description, social links, and banner image.</PopupEditProfileDescription>
+                    </PopupEditProfileHeader>
                     <div className="grid gap-4">
                       <div className="grid gap-2">
                         <label className="text-sm font-medium">Description</label>
@@ -238,16 +238,16 @@ const Profile = () => {
                         </div>
                       </div>
                     </div>
-                    <DialogFooter>
+                    <PopupEditProfileFooter>
                       <Button variant="outline" onClick={() => setOpen(false)} disabled={saving}>
                         Cancel
                       </Button>
                       <Button onClick={onSave} disabled={saving}>
                         {saving ? "Saving..." : "Save changes"}
                       </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
+                    </PopupEditProfileFooter>
+                  </PopupEditProfileContent>
+                </PopupEditProfile>
                 <Button variant="outline" size="sm" onClick={() => signOut({ redirectUrl: "/" })}>
                   <LogOut className="mr-2 h-4 w-4" />
                   Log out
