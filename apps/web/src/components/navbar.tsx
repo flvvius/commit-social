@@ -49,16 +49,14 @@ export function Navbar() {
   };
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-border bg-card shadow-sm">
+    <nav className="sticky top-0 z-50 border-b border-border bg-card/80 backdrop-blur supports-[backdrop-filter]:bg-card/60 shadow-sm">
       <div className="flex items-center justify-between gap-4 px-6 py-3">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 min-w-fit">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold text-sm">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-primary text-white font-bold text-sm shadow-xs">
             C
           </div>
-          <span className="text-lg font-semibold text-foreground hidden sm:inline">
-            Commit
-          </span>
+          <span className="text-lg font-semibold hidden sm:inline text-gradient-primary">Commit</span>
         </Link>
 
         {/* Search Bar */}
@@ -111,6 +109,8 @@ export function Navbar() {
           </div>
         </div>
       </div>
+      {/* Gradient accent bar */}
+      <div className="h-0.5 w-full bg-gradient-primary" />
     </nav>
   );
 }

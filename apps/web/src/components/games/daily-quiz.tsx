@@ -76,7 +76,7 @@ export function DailyQuizCard() {
         </p>
       )}
       <button
-        className="w-full text-xs bg-primary text-primary-foreground px-2 py-1 rounded disabled:opacity-50"
+        className="w-full text-xs bg-gradient-primary text-white px-2 py-1 rounded disabled:opacity-50 hover:brightness-110 shadow-xs"
         disabled={disabled || selected === null}
         onClick={async () => {
           if (selected === null) return;

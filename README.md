@@ -66,3 +66,28 @@ social-media-app/
 - `npm run dev:setup`: Setup and configure your Convex project
 - `npm run check-types`: Check TypeScript types across all apps
 - `cd apps/web && npm run generate-pwa-assets`: Generate PWA assets
+
+## Styling and gradients
+
+We've added a vibrant, accessible gradient system powered by Tailwind CSS v4 and OKLCH tokens:
+
+- App background: applied via the `bg-app` class in `apps/web/src/index.css` for subtle colorful blobs that adapt to dark mode.
+- Primary gradient helpers:
+	- `bg-gradient-primary` – background gradient (purple → pink → blue)
+	- `text-gradient-primary` – gradient text utility
+	- `gradient-border` – decorative 1px gradient border using a mask
+
+Use them in components/pages as regular classes. Examples:
+
+```tsx
+// Button (shadcn):
+<Button variant="gradient">Get Started</Button>
+
+// Any element background:
+<div className="rounded-xl p-6 bg-gradient-primary text-white">…</div>
+
+// Gradient text:
+<h1 className="text-3xl font-bold text-gradient-primary">Commit</h1>
+```
+
+Brand colors are defined as OKLCH variables in `apps/web/src/index.css` under `:root` and have dark-mode adjustments. Tweak `--brand-pink`, `--brand-purple`, and `--brand-blue` to fine-tune the palette.

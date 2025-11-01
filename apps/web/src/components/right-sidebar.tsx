@@ -22,12 +22,12 @@ export function RightSidebar() {
   );
 
   return (
-    <aside className="w-72 border-l border-border bg-background overflow-y-auto">
+    <aside className="w-full border-l border-border bg-background overflow-y-auto">
       {/* Let's go smoke - only show if user is in smokers lounge */}
       {isInSmokersLounge && (
         <div className="p-4 border-b border-border">
           <button
-            className="w-full flex items-center justify-center gap-2 text-sm bg-primary text-primary-foreground px-3 py-2 rounded hover:opacity-90"
+            className="w-full flex items-center justify-center gap-2 text-sm bg-gradient-primary text-white px-3 py-2 rounded hover:brightness-110 shadow-xs"
             onClick={async () => {
               try {
                 // Use the group's slug to be explicit and robust
@@ -82,7 +82,7 @@ export function RightSidebar() {
                   </p>
                 </div>
                 <button
-                  className="text-xs bg-primary text-primary-foreground px-2 py-1 rounded hover:opacity-90"
+                  className="text-xs bg-gradient-primary text-white px-2 py-1 rounded hover:brightness-110 shadow-xs"
                   onClick={async () => {
                     try {
                       const convId = await getOrCreate({

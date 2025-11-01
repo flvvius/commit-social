@@ -38,6 +38,8 @@ export default function RootLayout({
           <Providers>
             {/* Radix Theme component should wrap your entire app */}
             <Theme>
+              {/* App background with subtle colorful gradients */}
+              <div className="min-h-screen bg-app">
               {/* Onboarding Dialog - Shows on first login */}
               <OnboardingDialog />
 
@@ -48,7 +50,7 @@ export default function RootLayout({
               <Grid
                 px={{ initial: "4", md: "5" }}
                 mt="5"
-                columns={{ initial: "1fr", md: "250px 1fr 300px" }}
+                columns={{ initial: "1fr", md: "400px 1fr 400px" }}
                 gap="5"
               >
                 {/* COLUMN 1: LEFT SIDEBAR */}
@@ -73,6 +75,7 @@ export default function RootLayout({
                   <RightSidebar />
                 </Box>
               </Grid>
+              </div>
             </Theme>
           </Providers>
         </ClerkProvider>

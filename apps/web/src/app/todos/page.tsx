@@ -58,7 +58,7 @@ export default function TodosPage() {
               onChange={(e) => setNewTodoText(e.target.value)}
               placeholder="Add a new task..."
             />
-            <Button type="submit" disabled={!newTodoText.trim()}>
+            <Button type="submit" disabled={!newTodoText.trim()} variant="gradient">
               Add
             </Button>
           </form>

@@ -21,17 +21,7 @@ import {
   Select,
 } from "@radix-ui/themes";
 import { SignInButton, SignedOut } from "@clerk/nextjs";
-import {
-  Github,
-  Linkedin,
-  Twitter,
-  Globe,
-  Flame,
-  Plus,
-  Trash2,
-  Pencil,
-  ArrowLeft,
-} from "lucide-react";
+import { Github, Linkedin, Twitter, Globe, Flame, Plus, Trash2, Pencil, ArrowLeft } from "lucide-react";
 import { PostCard } from "@/components/feed/post-card";
 import { AVAILABLE_BADGES, badgeUrl, getBadgeMeta } from "@/lib/badges";
 import Link from "next/link";
@@ -130,14 +120,10 @@ export default function ProfilePage() {
 
   // (moved useEffect above to avoid breaking Hooks order with early returns)
 
-  const onAddLink = () =>
-    setLinksDraft((arr) => [...arr, { platform: "GitHub", url: "" }]);
-  const onRemoveLink = (idx: number) =>
-    setLinksDraft((arr) => arr.filter((_, i) => i !== idx));
+  const onAddLink = () => setLinksDraft((arr) => [...arr, { platform: "GitHub", url: "" }]);
+  const onRemoveLink = (idx: number) => setLinksDraft((arr) => arr.filter((_, i) => i !== idx));
   const onChangeLink = (idx: number, key: keyof SocialLink, val: string) =>
-    setLinksDraft((arr) =>
-      arr.map((it, i) => (i === idx ? { ...it, [key]: val } : it))
-    );
+    setLinksDraft((arr) => arr.map((it, i) => (i === idx ? { ...it, [key]: val } : it)));
 
   const onSave = async () => {
     setSaving(true);
@@ -189,7 +175,7 @@ export default function ProfilePage() {
               style={{ boxShadow: "0 0 0 4px var(--color-panel)" }}
             />
             <Box>
-              <Text as="div" size="5" weight="bold">
+              <Text as="div" size="5" weight="bold" className="text-gradient-primary">
                 {name}
               </Text>
               {(user as any).position && (
@@ -203,12 +189,7 @@ export default function ProfilePage() {
                 </Text>
               )}
             </Box>
-            <Link href="/admin/kb">
-              <Button variant="soft" size="2">
-                <ArrowLeft className="h-4 w-4" />
-                Admin
-              </Button>
-            </Link>
+
             <Box ml="auto">
               <Dialog.Root open={open} onOpenChange={setOpen}>
                 <Dialog.Trigger>
@@ -224,19 +205,13 @@ export default function ProfilePage() {
                       <Text size="2" color="gray">
                         Banner URL
                       </Text>
-                      <TextField.Root
-                        value={bannerDraft}
-                        onChange={(e) => setBannerDraft(e.target.value)}
-                      />
+                      <TextField.Root value={bannerDraft} onChange={(e) => setBannerDraft(e.target.value)} />
                     </Box>
                     <Box>
                       <Text size="2" color="gray">
                         Descriere
                       </Text>
-                      <TextArea
-                        value={bioDraft}
-                        onChange={(e) => setBioDraft(e.target.value)}
-                      />
+                      <TextArea value={bioDraft} onChange={(e) => setBioDraft(e.target.value)} />
                     </Box>
                     <Box>
                       <Text size="2" color="gray">
@@ -255,16 +230,8 @@ export default function ProfilePage() {
                       <Flex direction="column" gap="2">
                         {linksDraft.map((lk, i) => (
                           <Flex key={i} align="center" gap="2">
-                            <Select.Root
-                              value={lk.platform}
-                              onValueChange={(val) =>
-                                onChangeLink(i, "platform", val)
-                              }
-                            >
-                              <Select.Trigger
-                                placeholder="Platformă"
-                                style={{ minWidth: 140 }}
-                              />
+                            <Select.Root value={lk.platform} onValueChange={(val) => onChangeLink(i, "platform", val)}>
+                              <Select.Trigger placeholder="Platformă" style={{ minWidth: 140 }} />
                               <Select.Content>
                                 {SOCIAL_PLATFORMS.map((platform) => (
                                   <Select.Item key={platform} value={platform}>
@@ -276,16 +243,10 @@ export default function ProfilePage() {
                             <TextField.Root
                               placeholder="https://…"
                               value={lk.url}
-                              onChange={(e) =>
-                                onChangeLink(i, "url", e.target.value)
-                              }
+                              onChange={(e) => onChangeLink(i, "url", e.target.value)}
                               style={{ flex: 1 }}
                             />
-                            <Button
-                              variant="ghost"
-                              color="red"
-                              onClick={() => onRemoveLink(i)}
-                            >
+                            <Button variant="ghost" color="red" onClick={() => onRemoveLink(i)}>
                               <Trash2 size={14} />
                             </Button>
                           </Flex>
@@ -299,11 +260,7 @@ export default function ProfilePage() {
                       <Dialog.Close>
                         <Button variant="soft">Anulează</Button>
                       </Dialog.Close>
-                      <Button
-                        onClick={onSave}
-                        disabled={saving}
-                        loading={saving}
-                      >
+                      <Button onClick={onSave} disabled={saving} loading={saving}>
                         Salvează
                       </Button>
                     </Flex>
@@ -311,6 +268,12 @@ export default function ProfilePage() {
                 </Dialog.Content>
               </Dialog.Root>
             </Box>
+            <Link href="/admin/kb">
+              <Button variant="soft" size="2">
+                <ArrowLeft className="h-4 w-4" />
+                Admin
+              </Button>
+            </Link>
           </Flex>
 
           {/* Social links */}
@@ -321,17 +284,39 @@ export default function ProfilePage() {
                   <RLink key={i} href={s.url} target="_blank" rel="noreferrer">
                     <Flex align="center" gap="2">
                       <SocialIcon platform={s.platform} />
-                      <Text size="2">
-                        {new URL(s.url).hostname.replace("www.", "")}
-                      </Text>
+                      <Text size="2">{new URL(s.url).hostname.replace("www.", "")}</Text>
                     </Flex>
                   </RLink>
                 ))
               ) : (
-                <Text color="gray">
-                  Adaugă-ți link-urile sociale din setări (în curând)
-                </Text>
+                <Text color="gray">Adaugă-ți link-urile sociale din setări</Text>
               )}
+            </Flex>
+          </Box>
+          <Box px="4" pb="3">
+            <Flex gap="4" wrap="wrap">
+              {user.birthday && (
+                <Flex align="center" gap="2">
+                  <Text size="2" color="gray">
+                    🎂
+                  </Text>
+                  <Text size="2" weight="medium">
+                    {new Date(user.birthday).toLocaleDateString("ro-RO", {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    })}
+                  </Text>
+                </Flex>
+              )}
+              <Flex align="center" gap="2">
+                <Text size="2" color="gray">
+                  ⭐
+                </Text>
+                <Text size="2" weight="medium">
+                  {user.points ?? 0} puncte
+                </Text>
+              </Flex>
             </Flex>
           </Box>
         </Box>
@@ -381,12 +366,8 @@ export default function ProfilePage() {
               const meta = getBadgeMeta(file);
               const content = (
                 <span className="block rounded-md border border-border bg-card px-3 py-2 shadow-md text-xs max-w-[240px]">
-                  <span className="block font-medium text-foreground">
-                    {meta.title}
-                  </span>
-                  <span className="block mt-1 text-muted-foreground leading-snug">
-                    {meta.description}
-                  </span>
+                  <span className="block font-medium text-foreground">{meta.title}</span>
+                  <span className="block mt-1 text-muted-foreground leading-snug">{meta.description}</span>
                 </span>
               );
               return (
@@ -407,9 +388,7 @@ export default function ProfilePage() {
                 </Tooltip>
               );
             })}
-            {earnedBadges.length === 0 && (
-              <Text color="gray">Încă nu ai badge-uri câștigate.</Text>
-            )}
+            {earnedBadges.length === 0 && <Text color="gray">Încă nu ai badge-uri câștigate.</Text>}
           </div>
         </Box>
       </Card>
@@ -436,12 +415,8 @@ export default function ProfilePage() {
               const meta = getBadgeMeta(file);
               const content = (
                 <span className="block rounded-md border border-border bg-card px-3 py-2 shadow-md text-xs max-w-[240px]">
-                  <span className="block font-medium text-foreground">
-                    {meta.title}
-                  </span>
-                  <span className="block mt-1 text-muted-foreground leading-snug">
-                    {meta.description}
-                  </span>
+                  <span className="block font-medium text-foreground">{meta.title}</span>
+                  <span className="block mt-1 text-muted-foreground leading-snug">{meta.description}</span>
                 </span>
               );
               return (
@@ -456,9 +431,7 @@ export default function ProfilePage() {
                         aspectRatio: "1/1",
                         borderRadius: 12,
                         objectFit: "cover",
-                        filter: isEarned
-                          ? undefined
-                          : "grayscale(100%) brightness(0.6)",
+                        filter: isEarned ? undefined : "grayscale(100%) brightness(0.6)",
                       }}
                     />
                     {!isEarned && (
