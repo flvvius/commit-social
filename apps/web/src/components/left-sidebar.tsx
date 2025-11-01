@@ -1,6 +1,11 @@
 "use client";
 
-import { ChevronDown, Flame, Plus, MessageCircleQuestionMark } from "lucide-react";
+import {
+  ChevronDown,
+  Flame,
+  Plus,
+  MessageCircleQuestionMark,
+} from "lucide-react";
 import { mockQuiz } from "@/lib/mock-data";
 import { useState } from "react";
 import { useQuery, useMutation } from "convex/react";
@@ -41,15 +46,22 @@ export function LeftSidebar() {
       {/* Groups Section */}
 
       <div className="p-4 border-b border-border">
-        <Box>
-          <Button><MessageCircleQuestionMark/> <a href="/questions"  color="gray">Ask a Question</a></Button>
+        <Box mb="3">
+          <Link href="/questions" style={{ width: "100%", display: "block" }}>
+            <Button style={{ width: "100%" }} variant="soft">
+              <MessageCircleQuestionMark className="h-4 w-4" />
+              Ask a Question
+            </Button>
+          </Link>
         </Box>
         <button
           onClick={() => setGroupsExpanded(!groupsExpanded)}
           className="flex w-full items-center justify-between gap-2 font-semibold text-foreground hover:bg-muted px-2 py-1 rounded"
         >
           <span className="text-sm">Your Groups</span>
-          <ChevronDown className={`h-4 w-4 transition-transform ${groupsExpanded ? "" : "-rotate-90"}`} />
+          <ChevronDown
+            className={`h-4 w-4 transition-transform ${groupsExpanded ? "" : "-rotate-90"}`}
+          />
         </button>
 
         {groupsExpanded && (
@@ -80,7 +92,9 @@ export function LeftSidebar() {
 
       {/* Browse All Groups */}
       <div className="p-4 border-b border-border">
-        <h3 className="text-sm font-semibold text-foreground mb-3">Discover Groups</h3>
+        <h3 className="text-sm font-semibold text-foreground mb-3">
+          Discover Groups
+        </h3>
         <div className="space-y-2 max-h-64 overflow-y-auto">
           {allGroups
             ?.filter((g) => !g.isJoined)
@@ -93,7 +107,11 @@ export function LeftSidebar() {
                     {group.name}
                   </Text>
                 </Flex>
-                <Button size="1" variant="soft" onClick={() => handleToggleGroup(group._id, group.isJoined)}>
+                <Button
+                  size="1"
+                  variant="soft"
+                  onClick={() => handleToggleGroup(group._id, group.isJoined)}
+                >
                   Join
                 </Button>
               </Flex>

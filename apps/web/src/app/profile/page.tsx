@@ -30,9 +30,11 @@ import {
   Plus,
   Trash2,
   Pencil,
+  ArrowLeft,
 } from "lucide-react";
 import { PostCard } from "@/components/feed/post-card";
 import { AVAILABLE_BADGES, badgeUrl, getBadgeMeta } from "@/lib/badges";
+import Link from "next/link";
 
 type SocialLink = { platform: string; url: string };
 
@@ -201,6 +203,12 @@ export default function ProfilePage() {
                 </Text>
               )}
             </Box>
+            <Link href="/admin/kb">
+              <Button variant="soft" size="2">
+                <ArrowLeft className="h-4 w-4" />
+                Admin
+              </Button>
+            </Link>
             <Box ml="auto">
               <Dialog.Root open={open} onOpenChange={setOpen}>
                 <Dialog.Trigger>
