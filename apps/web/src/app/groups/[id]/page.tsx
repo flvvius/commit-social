@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "@social-media-app/backend/convex/_generated/api";
 import {
   Flex,
@@ -13,16 +13,20 @@ import {
 } from "@radix-ui/themes";
 import { PostCard } from "@/components/feed/post-card";
 import { CreatePost } from "@/components/feed/create-post";
-import { ArrowLeft, Users } from "lucide-react";
+import { ArrowLeft, Users, LogOut } from "lucide-react";
 import Link from "next/link";
 import type { Id } from "@social-media-app/backend/convex/_generated/dataModel";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
+import { toast } from "sonner";
 
 export default function GroupPage() {
   const params = useParams();
+  const router = useRouter();
   const groupId = params.id as Id<"groups">;
   const [membersDialogOpen, setMembersDialogOpen] = useState(false);
+  const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
+  const [isLeaving, setIsLeaving] = useState(false);
 
   const group = useQuery(api.groups.get, { id: groupId });
   const members = useQuery(api.groups.getMembers, { groupId: groupId });
@@ -30,6 +34,21 @@ export default function GroupPage() {
     limit: 50,
     groupId: groupId,
   });
+  const leaveGroup = useMutation(api.groups.leave);
+
+  const handleLeaveGroup = async () => {
+    setIsLeaving(true);
+    try {
+      await leaveGroup({ groupId });
+      toast.success(`You left ${group?.name}`);
+      setLeaveDialogOpen(false);
+      router.push("/feed");
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to leave group");
+    } finally {
+      setIsLeaving(false);
+    }
+  };
 
   if (group === undefined || posts === undefined || members === undefined) {
     return (
@@ -56,12 +75,27 @@ export default function GroupPage() {
   return (
     <Flex direction="column" gap="4">
       {/* Back Navigation */}
-      <Link href="/feed">
-        <Button variant="ghost" size="2">
-          <ArrowLeft className="h-4 w-4" />
-          Back to Feed
-        </Button>
-      </Link>
+      <Flex justify="between" align="center">
+        <Link href="/feed">
+          <Button variant="ghost" size="2">
+            <ArrowLeft className="h-4 w-4" />
+            Back to Feed
+          </Button>
+        </Link>
+        
+        {/* Leave Group Button - only show if user is a member */}
+        {group.isJoined && (
+          <Button
+            variant="soft"
+            color="red"
+            size="2"
+            onClick={() => setLeaveDialogOpen(true)}
+          >
+            <LogOut className="h-4 w-4" />
+            Leave Group
+          </Button>
+        )}
+      </Flex>
 
       {/* Group Header */}
       <Box
@@ -98,6 +132,33 @@ export default function GroupPage() {
           )}
         </Flex>
       </Box>
+
+      {/* Leave Group Confirmation Dialog */}
+      <Dialog.Root open={leaveDialogOpen} onOpenChange={setLeaveDialogOpen}>
+        <Dialog.Content maxWidth="450px">
+          <Dialog.Title>Leave {group.name}?</Dialog.Title>
+          <Dialog.Description size="2" mb="4">
+            Are you sure you want to leave this group? You won't see posts from this group anymore, but you can rejoin anytime.
+          </Dialog.Description>
+
+          <Flex gap="3" mt="4" justify="end">
+            <Dialog.Close>
+              <Button variant="soft" color="gray">
+                Cancel
+              </Button>
+            </Dialog.Close>
+            <Button
+              color="red"
+              onClick={handleLeaveGroup}
+              disabled={isLeaving}
+              loading={isLeaving}
+            >
+              <LogOut className="h-4 w-4" />
+              Leave Group
+            </Button>
+          </Flex>
+        </Dialog.Content>
+      </Dialog.Root>
 
       {/* Members Dialog */}
       <Dialog.Root open={membersDialogOpen} onOpenChange={setMembersDialogOpen}>
