@@ -240,3 +240,57 @@ export const completeOnboarding = mutation({
     return user._id;
   },
 });
+
+// MUTATION: Recompute badges for current user based on activity
+export const recomputeBadges = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity?.email) throw new Error("Not authenticated");
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_email", (q) => q.eq("email", identity.email!))
+      .first();
+    if (!user) throw new Error("User not found");
+
+    const BADGES = {
+      ACTIVE: "Active Contributor Badge Design.png",
+      STREAK: "Streak Hero Badge Design.png",
+      SMOKE: "Smoke Break Crew Badge Design.png",
+      DAILY: "Daily Game Badge Design.png",
+    } as const;
+
+    const have: Set<string> = new Set(((user as any).badges || []) as string[]);
+
+    // Active Contributor: >= 3 posts
+    const postCount = (await ctx.db
+      .query("posts")
+      .withIndex("by_author", (q) => q.eq("authorId", user._id))
+      .take(3)).length;
+    if (postCount >= 3) have.add(BADGES.ACTIVE);
+
+    // Streak Hero: streak > 5 (prefer users.streak)
+    const streakNum: number = (user as any).streak ?? 0;
+    if (streakNum > 5) have.add(BADGES.STREAK);
+
+    // Smoke Break: member of smokers-lounge
+    const smokers = await ctx.db
+      .query("groups")
+      .withIndex("by_slug", (q) => q.eq("slug", "smokers-lounge"))
+      .first();
+    if (smokers && ((user as any).interests || []).includes(smokers._id)) {
+      have.add(BADGES.SMOKE);
+    }
+
+    // Daily Game: played quiz at least once (presence of streaks record)
+    const streakDoc = await ctx.db
+      .query("streaks")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .first();
+    if (streakDoc) have.add(BADGES.DAILY);
+
+    await ctx.db.patch(user._id, { badges: Array.from(have) });
+    return { ok: true, badges: Array.from(have) };
+  },
+});
