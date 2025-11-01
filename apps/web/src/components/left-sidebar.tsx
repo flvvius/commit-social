@@ -6,7 +6,7 @@ import { useState } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@social-media-app/backend/convex/_generated/api";
 import { CreateGroupDialog } from "./groups/create-group-dialog";
-import { Button, Flex, Text, Box, Link } from "@radix-ui/themes";
+import { Button, Flex, Text, Box } from "@radix-ui/themes";
 import { toast } from "sonner";
 import { DailyQuizCard } from "./games/daily-quiz";
 import Link from "next/link";
