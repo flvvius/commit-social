@@ -8,18 +8,20 @@ import {
   Unauthenticated,
   useQuery,
 } from "convex/react";
+import Feed from "./feed/page";
+import { Spinner } from "@radix-ui/themes";
 
 export default function Dashboard() {
   return (
     <>
       <Authenticated>
-        <div>Salut</div>
+        <Feed />
       </Authenticated>
       <Unauthenticated>
         <SignInButton />
       </Unauthenticated>
       <AuthLoading>
-        <div>Loading...</div>
+        <Spinner />
       </AuthLoading>
     </>
   );

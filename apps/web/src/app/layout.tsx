@@ -33,7 +33,7 @@ export default function RootLayout({
         <ClerkProvider>
           <Providers>
             {/* Radix Theme component should wrap your entire app */}
-            <Theme>
+            <Theme >
               {/* Onboarding Dialog - Shows on first login */}
               <OnboardingDialog />
 

@@ -8,6 +8,7 @@ import {
 	Unauthenticated,
 	useQuery,
 } from "convex/react";
+import { Spinner } from "@radix-ui/themes";
 
 export default function Dashboard() {
 	const user = useUser();
@@ -27,7 +28,7 @@ export default function Dashboard() {
 				<SignInButton />
 			</Unauthenticated>
 			<AuthLoading>
-				<div>Loading...</div>
+				<Spinner />
 			</AuthLoading>
 		</>
 	);
