@@ -15,8 +15,22 @@ const EMOJI_MAP: Record<string, string> = {
 };
 const emojiNames = Object.keys(EMOJI_MAP);
 
-export function CommentsSection({ postId, limit = 50 }: { postId: string; limit?: number }) {
-  const comments = useQuery(api.comments.listByPost, { postId: postId as any, limit });
+export function CommentsSection({
+  postId,
+  answerId,
+  limit = 50,
+}: {
+  postId?: string;
+  answerId?: string;
+  limit?: number;
+}) {
+  const isForPost = !!postId && !answerId;
+  const isForAnswer = !!answerId && !postId;
+  const comments = isForPost
+    ? useQuery(api.comments.listByPost, { postId: postId as any, limit })
+    : isForAnswer
+      ? useQuery(api.comments.listByAnswer, { answerId: answerId as any, limit })
+      : undefined;
   const createComment = useMutation(api.comments.create);
   const addReaction = useMutation(api.reactions.add);
   const { user } = useUser();
@@ -40,7 +54,11 @@ export function CommentsSection({ postId, limit = 50 }: { postId: string; limit?
                 disabled={!value.trim()}
                 onClick={async () => {
                   try {
-                    await createComment({ postId: postId as any, content: value.trim() });
+                    if (isForPost) {
+                      await createComment({ postId: postId as any, content: value.trim() } as any);
+                    } else if (isForAnswer) {
+                      await createComment({ answerId: answerId as any, content: value.trim() } as any);
+                    }
                     setValue("");
                   } catch (err: any) {
                     toast.error(err?.message ?? "Failed to comment");
@@ -143,11 +161,13 @@ function CommentItem({
                   disabled={!text.trim()}
                   onClick={async () => {
                     try {
-                      await onReply({
-                        postId: (comment as any).postId,
+                      const payload: any = {
                         content: text.trim(),
                         parentCommentId: (comment as any)._id,
-                      } as any);
+                      };
+                      if ((comment as any).postId) payload.postId = (comment as any).postId;
+                      if ((comment as any).answerId) payload.answerId = (comment as any).answerId;
+                      await onReply(payload);
                       setText("");
                       setReplying(false);
                     } catch (err: any) {

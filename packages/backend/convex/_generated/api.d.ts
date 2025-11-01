@@ -8,6 +8,8 @@
  * @module
  */
 
+import type * as ai from "../ai.js";
+import type * as answers from "../answers.js";
 import type * as comments from "../comments.js";
 import type * as departments from "../departments.js";
 import type * as groups from "../groups.js";
@@ -17,6 +19,7 @@ import type * as messages from "../messages.js";
 import type * as notifications from "../notifications.js";
 import type * as posts from "../posts.js";
 import type * as privateData from "../privateData.js";
+import type * as questions from "../questions.js";
 import type * as quizzes from "../quizzes.js";
 import type * as reactions from "../reactions.js";
 import type * as search from "../search.js";
@@ -40,6 +43,8 @@ import type {
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  ai: typeof ai;
+  answers: typeof answers;
   comments: typeof comments;
   departments: typeof departments;
   groups: typeof groups;
@@ -49,6 +54,7 @@ declare const fullApi: ApiFromModules<{
   notifications: typeof notifications;
   posts: typeof posts;
   privateData: typeof privateData;
+  questions: typeof questions;
   quizzes: typeof quizzes;
   reactions: typeof reactions;
   search: typeof search;
