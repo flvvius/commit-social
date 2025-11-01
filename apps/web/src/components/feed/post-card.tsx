@@ -1,6 +1,10 @@
 "use client";
 
-import { Card, Flex, Avatar, Text, Box } from "@radix-ui/themes";
+import { Card, Flex, Avatar, Text, Box, Button, Inset, Separator, Tooltip, Badge } from "@radix-ui/themes";
+import { useMutation } from "convex/react";
+import { api } from "@social-media-app/backend/convex/_generated/api";
+import { toast } from "sonner";
+import { CommentsSection } from "./comments-section";
 
 type Author = {
   _id: string;
@@ -13,6 +17,9 @@ export type Post = {
   content: string;
   createdAt: number;
   author?: Author;
+  mediaUrls?: string[];
+  reactionCounts?: Record<string, number>;
+  isShowcase?: boolean;
 };
 
 export function PostCard({ post }: { post: Post }) {
@@ -24,9 +31,21 @@ export function PostCard({ post }: { post: Post }) {
     .toUpperCase();
 
   const time = new Date(post.createdAt).toLocaleString();
+  const addReaction = useMutation(api.reactions.add);
+  const EMOJI_MAP: Record<string, string> = {
+    fire: "🔥",
+    heart: "❤️",
+    tada: "🎉",
+    joy: "😂",
+  };
+  const emojiNames = Object.keys(EMOJI_MAP);
+
+  const showcaseStyle = post.isShowcase
+    ? { border: "1px solid var(--amber-7)", background: "var(--amber-2)" }
+    : undefined;
 
   return (
-    <Card>
+    <Card style={showcaseStyle}>
       <Flex direction="column" gap="2">
         <Flex gap="3" align="center">
           <Avatar src={post.author?.avatarUrl} fallback={initials || "?"} size="3" />
@@ -38,10 +57,92 @@ export function PostCard({ post }: { post: Post }) {
               {time}
             </Text>
           </Box>
+          {post.isShowcase && (
+            <Badge color="amber" radius="full" ml="auto">
+              Showcase
+            </Badge>
+          )}
         </Flex>
         <Box>
           <Text as="p">{post.content}</Text>
         </Box>
+        {!!post.mediaUrls?.length && (
+          <Inset>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))",
+                gap: 8,
+              }}
+            >
+              {post.mediaUrls.map((url, i) => (
+                <div key={i} style={{ width: "100%", aspectRatio: "1/1", overflow: "hidden", borderRadius: 8 }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={url} alt={`image-${i}`} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                </div>
+              ))}
+            </div>
+          </Inset>
+        )}
+        <Separator my="2" size="4" />
+        <Flex align="center" justify="between" wrap="wrap" gap="2">
+          <Flex align="center" gap="2">
+            {emojiNames.map((name) => (
+              <Tooltip key={name} content={`React ${EMOJI_MAP[name]}`}>
+                <Button
+                  variant="soft"
+                  size="2"
+                  onClick={async () => {
+                    try {
+                      await addReaction({ postId: post._id as any, emojiName: name });
+                    } catch (err: any) {
+                      toast.error(err?.message ?? "Failed to react");
+                    }
+                  }}
+                >
+                  {EMOJI_MAP[name]} {post.reactionCounts?.[name] ? post.reactionCounts[name] : 0}
+                </Button>
+              </Tooltip>
+            ))}
+          </Flex>
+          <Flex align="center" gap="2">
+            <Button
+              variant="ghost"
+              onClick={async () => {
+                const content = window.prompt("Add a comment:");
+                if (!content) return;
+                try {
+                  const createComment = (await import("convex/react")).useMutation?.(api.comments.create);
+                  // Fallback: if hook can't be used dynamically, just toast guidance
+                  toast.message("Comment UI not fully wired in this build. TODO: implement inline.");
+                } catch {}
+              }}
+            >
+              Comment
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={async () => {
+                const link = `${location.origin}/feed#${post._id}`;
+                try {
+                  if (navigator.share) {
+                    await navigator.share({ url: link });
+                  } else {
+                    await navigator.clipboard.writeText(link);
+                    toast.success("Link copied");
+                  }
+                } catch {}
+              }}
+            >
+              Share
+            </Button>
+            <Button variant="ghost" onClick={() => toast.message("Award coming soon ✨")}>
+              Award
+            </Button>
+          </Flex>
+        </Flex>
+        <Separator my="2" size="4" />
+        <CommentsSection postId={post._id} />
       </Flex>
     </Card>
   );

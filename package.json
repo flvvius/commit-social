@@ -16,7 +16,8 @@
     "dev:setup": "turbo -F @social-media-app/backend dev:setup"
   },
   "dependencies": {
-    "@radix-ui/themes": "^3.2.1"
+    "@radix-ui/themes": "^3.2.1",
+    "filepond-plugin-image-exif-orientation": "^1.0.11"
   },
   "devDependencies": {
     "turbo": "^2.5.4"

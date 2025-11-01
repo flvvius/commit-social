@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import type { Id } from "./_generated/dataModel";
+import type { Doc, Id } from "./_generated/dataModel";
 
 // MUTATION: Send a new message
 export const sendMessage = mutation({
@@ -132,9 +132,7 @@ export const markAsRead = mutation({
     // Find membership
     const membership = await ctx.db
       .query("conversationMembers")
-      .withIndex("by_user_and_conversation", (q) =>
-        q.eq("userId", user._id).eq("conversationId", args.conversationId)
-      )
+      .withIndex("by_user_and_conversation", (q) => q.eq("userId", user._id).eq("conversationId", args.conversationId))
       .first();
 
     if (membership) {

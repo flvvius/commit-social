@@ -8,13 +8,12 @@ import {
   Unauthenticated,
   useQuery,
 } from "convex/react";
-import Feed from "@/components/feed";
 
 export default function Dashboard() {
   return (
     <>
       <Authenticated>
-        <Feed />
+        <div>Salut</div>
       </Authenticated>
       <Unauthenticated>
         <SignInButton />
