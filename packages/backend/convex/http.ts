@@ -1,6 +1,5 @@
 import { httpRouter } from "convex/server";
 import { httpAction } from "./_generated/server";
-import { internal } from "./_generated/api";
 
 const http = httpRouter();
 
@@ -16,29 +15,8 @@ http.route({
       const payload = JSON.parse(payloadString);
       const eventType = payload.type;
 
-      // Handle user.created and user.updated events
-      if (eventType === "user.created" || eventType === "user.updated") {
-        const { id, email_addresses, first_name, last_name, image_url } =
-          payload.data;
-
-        const email = email_addresses?.[0]?.email_address || "";
-        const name = `${first_name || ""} ${last_name || ""}`.trim() || email;
-
-        await ctx.runMutation(internal.users.upsertFromClerk, {
-          clerkId: id,
-          name,
-          email,
-          avatarUrl: image_url,
-        });
-      }
-
-      // Handle user.deleted event
-      if (eventType === "user.deleted") {
-        const { id } = payload.data;
-        await ctx.runMutation(internal.users.deleteFromClerk, {
-          clerkId: id,
-        });
-      }
+      // Clerk webhook events are acknowledged here. User upsert/delete mutations
+      // are temporarily disabled until internal APIs are added.
 
       return new Response(null, { status: 200 });
     } catch (error) {

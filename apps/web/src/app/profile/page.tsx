@@ -51,33 +51,19 @@ const Profile = () => {
   const me = useQuery(api.users.getMe);
   const myPosts = useQuery(api.posts.listMine, { limit: 20 });
 
-  if (!isLoaded) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-muted-foreground">Loading...</div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-muted-foreground">Please sign in to view your profile</div>
-      </div>
-    );
-  }
+  // We avoid early returns to keep hooks order stable; render conditionally instead
 
   // Prefer full name, then first/last, then email local-part, then fallback
   const meAny = me as any;
   const displayName =
     (meAny?.name as string | undefined) ||
-    user.fullName ||
-    [user.firstName, user.lastName].filter(Boolean).join(" ") ||
-    user.primaryEmailAddress?.emailAddress?.split("@")[0] ||
+    user?.fullName ||
+    [user?.firstName, user?.lastName].filter(Boolean).join(" ") ||
+    user?.primaryEmailAddress?.emailAddress?.split("@")[0] ||
     "User";
 
   // Get initials for avatar fallback (supports names or email)
-  const sourceForInitials = displayName || user.primaryEmailAddress?.emailAddress || "User";
+  const sourceForInitials = displayName || user?.primaryEmailAddress?.emailAddress || "User";
   const initials = sourceForInitials
     .split(/[ ._@-]/)
     .filter(Boolean)
@@ -97,7 +83,7 @@ const Profile = () => {
   // Merged profile data (Convex first, then Clerk, then fallbacks)
   const profileData = {
     name: displayName,
-    avatar: user.hasImage ? user.imageUrl : (meAny?.avatarUrl as string | undefined),
+  avatar: user?.hasImage ? (user.imageUrl as string) : ((meAny?.avatarUrl as string | undefined)),
     banner: (meAny?.bannerUrl as string | undefined) ?? null,
     bio: (meAny?.bio as string | undefined) ?? "Coffee enthusiast, code explorer, always learning 🚀",
     badges: ((meAny?.badges as string[] | undefined) ?? ["Early Adopter", "Active Member", "Helpful"]) as string[],
@@ -107,7 +93,7 @@ const Profile = () => {
       { platform: "github", url: "#" },
     ]) as { platform: string; url: string }[],
     streak: 7,
-    joinedDate: user.createdAt ? new Date(user.createdAt) : new Date(),
+  joinedDate: user?.createdAt ? new Date(user.createdAt) : new Date(),
   };
 
   // Initialize form values when Convex/me is ready
@@ -143,6 +129,15 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {(!isLoaded) ? (
+        <div className="flex min-h-screen items-center justify-center">
+          <div className="text-muted-foreground">Loading...</div>
+        </div>
+      ) : (!user) ? (
+        <div className="flex min-h-screen items-center justify-center">
+          <div className="text-muted-foreground">Please sign in to view your profile</div>
+        </div>
+      ) : (
       <div className="mx-auto max-w-6xl">
         {/* Banner and Avatar Section */}
         <div className="relative">
@@ -266,8 +261,8 @@ const Profile = () => {
                   </div>
                 )}
               </div>
-              {user.primaryEmailAddress && (
-                <p className="text-muted-foreground text-sm">{user.primaryEmailAddress.emailAddress}</p>
+              {user?.primaryEmailAddress && (
+                <p className="text-muted-foreground text-sm">{user?.primaryEmailAddress?.emailAddress}</p>
               )}
               {profileData.bio && <p className="text-muted-foreground max-w-2xl">{profileData.bio}</p>}
 
@@ -372,6 +367,7 @@ const Profile = () => {
           </div>
         </div>
       </div>
+      )}
     </div>
   );
 };
