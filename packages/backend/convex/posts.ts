@@ -136,19 +136,21 @@ export const listRecent = query({
 
       posts = allPosts
         .filter((post) => {
-          // Always show global posts (no department)
+          // If post has a groupId, user MUST be in that group
+          if (post.groupId) {
+            // Only show if user has joined this group
+            return currentUser?.interests?.includes(post.groupId) || false;
+          }
+
+          // Post has no group, check department logic
+          // Always show global posts (no department and no group)
           if (!post.departmentId) return true;
 
-          // Show posts from user's department
+          // Show posts from user's department (only if no group restriction)
           if (
             currentUser?.departmentId &&
             post.departmentId === currentUser.departmentId
           ) {
-            return true;
-          }
-
-          // Show posts from groups user has joined
-          if (post.groupId && currentUser?.interests?.includes(post.groupId)) {
             return true;
           }
 
