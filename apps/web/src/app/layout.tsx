@@ -21,6 +21,10 @@ export const metadata: Metadata = {
   description: "A modern social app",
 };
 
+// Force dynamic rendering for the entire app
+export const dynamic = "force-dynamic";
+export const dynamicParams = true;
+
 export default function RootLayout({
   children,
 }: Readonly<{
