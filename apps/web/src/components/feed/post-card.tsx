@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useMemo, useState } from "react";
 import { Card, Flex, Avatar, Text, Box, Button, Inset, Separator, Tooltip, Badge } from "@radix-ui/themes";
 import { useMutation } from "convex/react";
 import { api } from "@social-media-app/backend/convex/_generated/api";
@@ -23,12 +24,25 @@ export type Post = {
 };
 
 export function PostCard({ post }: { post: Post }) {
+  const [index, setIndex] = useState(0);
   const initials = (post.author?.name ?? "?")
     .split(" ")
     .map((s) => s[0])
     .slice(0, 2)
     .join("")
     .toUpperCase();
+
+  const urls = useMemo(() => {
+    const fromUrls = post.mediaUrls ?? [];
+    // Fallback if media (with captions) exists in the payload
+    const fromMedia: string[] = (post as any)?.media?.map((m: any) => m?.url).filter(Boolean) ?? [];
+    return (fromUrls.length ? fromUrls : fromMedia) as string[];
+  }, [post]);
+
+  // Reset carousel index when post changes or image count changes
+  useEffect(() => {
+    setIndex(0);
+  }, [post._id, urls?.length]);
 
   const time = new Date(post.createdAt).toLocaleString();
   const addReaction = useMutation(api.reactions.add);
@@ -66,22 +80,80 @@ export function PostCard({ post }: { post: Post }) {
         <Box>
           <Text as="p">{post.content}</Text>
         </Box>
-        {!!post.mediaUrls?.length && (
+        {!!urls?.length && (
           <Inset>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))",
-                gap: 8,
-              }}
-            >
-              {post.mediaUrls.map((url, i) => (
-                <div key={i} style={{ width: "100%", aspectRatio: "1/1", overflow: "hidden", borderRadius: 8 }}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={url} alt={`image-${i}`} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                </div>
-              ))}
-            </div>
+            <Box style={{ position: "relative", width: "100%", height: 520, overflow: "hidden", borderRadius: 8 }}>
+              {/* Current image */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={urls[index]}
+                alt={`image-${index}`}
+                style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+              />
+
+              {/* Left control */}
+              {urls.length > 1 && (
+                <Box style={{ position: "absolute", left: 8, top: "50%", transform: "translateY(-50%)" }}>
+                  <Button
+                    radius="full"
+                    variant="solid"
+                    size="2"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIndex((prev) => (prev - 1 + urls.length) % urls.length);
+                    }}
+                    aria-label="Previous image"
+                  >
+                    &lt;
+                  </Button>
+                </Box>
+              )}
+
+              {/* Right control */}
+              {urls.length > 1 && (
+                <Box style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)" }}>
+                  <Button
+                    radius="full"
+                    variant="solid"
+                    size="2"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIndex((prev) => (prev + 1) % urls.length);
+                    }}
+                    aria-label="Next image"
+                  >
+                    &gt;
+                  </Button>
+                </Box>
+              )}
+
+              {/* Dots */}
+              {urls.length > 1 && (
+                <Flex
+                  justify="center"
+                  align="center"
+                  gap="2"
+                  style={{ position: "absolute", bottom: 8, left: 0, right: 0 }}
+                >
+                  {urls.map((_, i) => (
+                    <Button
+                      key={i}
+                      size="1"
+                      variant={i === index ? "solid" : "soft"}
+                      radius="full"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIndex(i);
+                      }}
+                      aria-label={`Go to image ${i + 1}`}
+                    >
+                      {/* small dot */}
+                      <Box style={{ width: 8, height: 8, borderRadius: 9999 }} />
+                    </Button>
+                  ))}
+                </Flex>
+              )}
+            </Box>
           </Inset>
         )}
         <Separator my="2" size="4" />
