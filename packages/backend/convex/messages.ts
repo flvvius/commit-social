@@ -18,7 +18,7 @@ export const sendMessage = mutation({
       .query("users")
       .withIndex("by_email", (q) => q.eq("email", identity.email!))
       .first();
-    
+
     if (!user) throw new Error("User not found");
 
     // Create the message
@@ -39,7 +39,9 @@ export const sendMessage = mutation({
     // Update unread counts for other participants
     const members = await ctx.db
       .query("conversationMembers")
-      .withIndex("by_conversation", (q) => q.eq("conversationId", args.conversationId))
+      .withIndex("by_conversation", (q) =>
+        q.eq("conversationId", args.conversationId)
+      )
       .collect();
 
     for (const member of members) {
@@ -67,7 +69,7 @@ export const getOrCreateDirectConversation = mutation({
       .query("users")
       .withIndex("by_email", (q) => q.eq("email", identity.email!))
       .first();
-    
+
     if (!currentUser) throw new Error("User not found");
 
     // Check if conversation already exists
@@ -124,7 +126,7 @@ export const markAsRead = mutation({
       .query("users")
       .withIndex("by_email", (q) => q.eq("email", identity.email!))
       .first();
-    
+
     if (!user) throw new Error("User not found");
 
     // Find membership
@@ -145,7 +147,9 @@ export const markAsRead = mutation({
     // Mark all messages as read
     const messages = await ctx.db
       .query("messages")
-      .withIndex("by_conversation", (q) => q.eq("conversationId", args.conversationId))
+      .withIndex("by_conversation", (q) =>
+        q.eq("conversationId", args.conversationId)
+      )
       .collect();
 
     for (const message of messages) {
@@ -168,7 +172,7 @@ export const getConversations = query({
       .query("users")
       .withIndex("by_email", (q) => q.eq("email", identity.email!))
       .first();
-    
+
     if (!user) return [];
 
     // Get all memberships
@@ -183,10 +187,17 @@ export const getConversations = query({
         const conversation = await ctx.db.get(membership.conversationId);
         if (!conversation) return null;
 
+        // Get all participant info
+        const participants = await Promise.all(
+          conversation.participants.map((userId) => ctx.db.get(userId))
+        );
+
         // Get other participant info (for direct chats)
         let otherUser = null;
         if (conversation.type === "direct") {
-          const otherUserId = conversation.participants.find((id) => id !== user._id);
+          const otherUserId = conversation.participants.find(
+            (id) => id !== user._id
+          );
           if (otherUserId) {
             otherUser = await ctx.db.get(otherUserId);
           }
@@ -195,7 +206,9 @@ export const getConversations = query({
         // Get last message
         const lastMessage = await ctx.db
           .query("messages")
-          .withIndex("by_conversation", (q) => q.eq("conversationId", conversation._id))
+          .withIndex("by_conversation", (q) =>
+            q.eq("conversationId", conversation._id)
+          )
           .order("desc")
           .first();
 
@@ -204,6 +217,7 @@ export const getConversations = query({
           unreadCount: membership.unreadCount,
           lastMessage,
           otherUser,
+          participants, // All users in the conversation
         };
       })
     );
@@ -226,7 +240,9 @@ export const getMessages = query({
 
     const messages = await ctx.db
       .query("messages")
-      .withIndex("by_conversation", (q) => q.eq("conversationId", args.conversationId))
+      .withIndex("by_conversation", (q) =>
+        q.eq("conversationId", args.conversationId)
+      )
       .order("asc")
       .take(args.limit || 100);
 
@@ -242,5 +258,25 @@ export const getMessages = query({
     );
 
     return messagesWithSender;
+  },
+});
+
+// QUERY: Get all users available for chatting
+export const getAllUsers = query({
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return [];
+
+    const currentUser = await ctx.db
+      .query("users")
+      .withIndex("by_email", (q) => q.eq("email", identity.email!))
+      .first();
+
+    if (!currentUser) return [];
+
+    // Get all users except current user
+    const allUsers = await ctx.db.query("users").collect();
+    
+    return allUsers.filter((user) => user._id !== currentUser._id);
   },
 });
