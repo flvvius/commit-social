@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { Doc, Id } from "./_generated/dataModel";
+import type { Doc, Id } from "./_generated/dataModel";
 
 // MUTATION: Send a new message
 export const sendMessage = mutation({
@@ -18,7 +18,7 @@ export const sendMessage = mutation({
       .query("users")
       .withIndex("by_email", (q) => q.eq("email", identity.email!))
       .first();
-    
+
     if (!user) throw new Error("User not found");
 
     // Create the message
@@ -67,7 +67,7 @@ export const getOrCreateDirectConversation = mutation({
       .query("users")
       .withIndex("by_email", (q) => q.eq("email", identity.email!))
       .first();
-    
+
     if (!currentUser) throw new Error("User not found");
 
     // Check if conversation already exists
@@ -124,15 +124,13 @@ export const markAsRead = mutation({
       .query("users")
       .withIndex("by_email", (q) => q.eq("email", identity.email!))
       .first();
-    
+
     if (!user) throw new Error("User not found");
 
     // Find membership
     const membership = await ctx.db
       .query("conversationMembers")
-      .withIndex("by_user_and_conversation", (q) =>
-        q.eq("userId", user._id).eq("conversationId", args.conversationId)
-      )
+      .withIndex("by_user_and_conversation", (q) => q.eq("userId", user._id).eq("conversationId", args.conversationId))
       .first();
 
     if (membership) {
@@ -168,7 +166,7 @@ export const getConversations = query({
       .query("users")
       .withIndex("by_email", (q) => q.eq("email", identity.email!))
       .first();
-    
+
     if (!user) return [];
 
     // Get all memberships

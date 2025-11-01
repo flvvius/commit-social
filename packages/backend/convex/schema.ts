@@ -15,6 +15,7 @@ export default defineSchema({
     bannerUrl: v.optional(v.string()), // optional
     departmentId: v.optional(v.id("departments")),
     bio: v.optional(v.string()),
+    isShowcase: v.optional(v.boolean()),
     socialLinks: v.optional(
       v.array(
         v.object({
@@ -52,7 +53,17 @@ export default defineSchema({
     groupId: v.optional(v.id("groups")),
     type: v.string(), // "text" | "image" | "collab"
     content: v.string(),
+    // Showcase posts (achievements) get special styling on the frontend
+    isShowcase: v.optional(v.boolean()),
     mediaUrls: v.optional(v.array(v.string())), // nu ii vad sensul
+    media: v.optional(
+      v.array(
+        v.object({
+          url: v.string(),
+          caption: v.optional(v.string()),
+        })
+      )
+    ),
     tags: v.optional(v.array(v.id("tags"))),
     collabId: v.optional(v.id("collaborations")),
     createdAt: v.number(),
@@ -75,7 +86,7 @@ export default defineSchema({
     postId: v.id("posts"),
     userId: v.id("users"),
     type: v.string(), // “emoji” | “poza”
-    emoji: v.optional(v.string()), // ex: "🔥", "😂", "❤️"
+    emojiName: v.optional(v.string()), // ex: "fire", "joy", "heart"
     pozaURL: v.optional(v.string()),
     createdAt: v.number(),
   }).index("by_post", ["postId"]),

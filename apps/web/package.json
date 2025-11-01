@@ -24,7 +24,11 @@
     "babel-plugin-react-compiler": "^1.0.0",
     "convex": "^1.27.0",
     "@social-media-app/backend": "*",
-    "@clerk/nextjs": "^6.31.5"
+    "@clerk/nextjs": "^6.31.5",
+    "filepond": "^4.30.7",
+    "react-filepond": "^7.1.2",
+    "filepond-plugin-image-preview": "^4.6.12",
+    "filepond-plugin-file-validate-type": "^1.2.8"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.10",
