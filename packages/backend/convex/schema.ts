@@ -90,18 +90,24 @@ export default defineSchema({
     postId: v.id("posts"),
     authorId: v.id("users"),
     content: v.string(),
+    parentCommentId: v.optional(v.id("comments")),
     createdAt: v.number(),
-  }).index("by_post", ["postId"]),
+  })
+    .index("by_post", ["postId"])
+    .index("by_parent", ["parentCommentId"]),
 
   // Reacții (emoji-uri / poze)
   reactions: defineTable({
-    postId: v.id("posts"),
+    postId: v.optional(v.id("posts")),
+    commentId: v.optional(v.id("comments")),
     userId: v.id("users"),
     type: v.string(), // “emoji” | “poza”
     emojiName: v.optional(v.string()), // ex: "fire", "joy", "heart"
     pozaURL: v.optional(v.string()),
     createdAt: v.number(),
-  }).index("by_post", ["postId"]),
+  })
+    .index("by_post", ["postId"])
+    .index("by_comment", ["commentId"]),
 
   // Tag-uri
   tags: defineTable({
