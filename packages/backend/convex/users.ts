@@ -58,7 +58,9 @@ export const updateProfile = mutation({
   args: {
     bio: v.optional(v.string()),
     bannerUrl: v.optional(v.string()),
-    socialLinks: v.optional(v.array(v.object({ platform: v.string(), url: v.string() }))),
+    socialLinks: v.optional(
+      v.array(v.object({ platform: v.string(), url: v.string() }))
+    ),
     badges: v.optional(v.array(v.string())),
     birthday: v.optional(v.string()), // YYYY-MM-DD
   },
@@ -82,7 +84,9 @@ export const updateProfile = mutation({
       ...(args.bio !== undefined ? { bio: args.bio } : {}),
       ...(args.bannerUrl !== undefined ? { bannerUrl: args.bannerUrl } : {}),
       ...(args.socialLinks !== undefined ? { socialLinks } : {}),
-      ...(args.badges !== undefined ? { badges: args.badges.slice(0, 64) } : {}),
+      ...(args.badges !== undefined
+        ? { badges: args.badges.slice(0, 64) }
+        : {}),
       ...(args.birthday !== undefined ? { birthday: args.birthday } : {}),
     });
 
@@ -101,7 +105,9 @@ export const listUpcomingBirthdays = query({
     const todayMonth = today.getUTCMonth() + 1;
     const todayDay = today.getUTCDate();
 
-    function parseBirthday(s?: string | null): { month: number; day: number } | null {
+    function parseBirthday(
+      s?: string | null
+    ): { month: number; day: number } | null {
       if (!s) return null;
       const m = /^([0-9]{4})-([0-9]{2})-([0-9]{2})$/.exec(s);
       if (!m) return null;
@@ -126,7 +132,10 @@ export const listUpcomingBirthdays = query({
         const d = daysUntil(bd.month, bd.day);
         return { user: u, daysUntil: d, isToday: d === 0 };
       })
-      .filter((x): x is { user: any; daysUntil: number; isToday: boolean } => !!x && x.daysUntil <= windowDays)
+      .filter(
+        (x): x is { user: any; daysUntil: number; isToday: boolean } =>
+          !!x && x.daysUntil <= windowDays
+      )
       .sort((a, b) => a.daysUntil - b.daysUntil)
       .slice(0, 20);
 
@@ -187,6 +196,49 @@ export const deleteFromClerk = internalMutation({
     if (user) {
       await ctx.db.delete(user._id);
     }
+  },
+});
+
+// QUERY: Get user by ID (for viewing other users' profiles)
+export const getUserById = query({
+  args: { userId: v.id("users") },
+  handler: async (ctx, args) => {
+    const user = await ctx.db.get(args.userId);
+    if (!user) return null;
+
+    // Get user's department if they have one
+    let department = null;
+    if (user.departmentId) {
+      department = await ctx.db.get(user.departmentId);
+    }
+
+    // Get user's groups
+    const groupIds = user.interests || [];
+    const groups = await Promise.all(
+      groupIds.map(async (groupId) => {
+        const group = await ctx.db.get(groupId);
+        return group
+          ? {
+              _id: group._id,
+              name: group.name,
+              emoji: group.emoji,
+              slug: group.slug,
+            }
+          : null;
+      })
+    );
+
+    return {
+      ...user,
+      department: department
+        ? {
+            _id: department._id,
+            name: department.name,
+            emoji: department.emoji,
+          }
+        : null,
+      groups: groups.filter((g) => g !== null),
+    };
   },
 });
 
