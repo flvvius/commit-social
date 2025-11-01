@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useUser, SignedIn, SignedOut, SignInButton } from "@clerk/nextjs";
-import { useAction, useMutation } from "convex/react";
+import { useAction, useMutation, useQuery } from "convex/react";
 import { api } from "@social-media-app/backend/convex/_generated/api";
 import type { Id } from "@social-media-app/backend/convex/_generated/dataModel";
 import {
@@ -17,6 +17,8 @@ import {
   Inset,
   Dialog,
   Separator,
+  Select,
+  Checkbox,
 } from "@radix-ui/themes";
 import { FilePond } from "react-filepond";
 import "filepond/dist/filepond.min.css";
@@ -31,12 +33,24 @@ type CreatePostProps = {
   placeholder?: string;
   onCreated?: () => void;
 };
-registerPlugin(FilePondPluginFileValidateType, FilePondPluginImagePreview, FilePondPluginImageExifOrientation);
+registerPlugin(
+  FilePondPluginFileValidateType,
+  FilePondPluginImagePreview,
+  FilePondPluginImageExifOrientation
+);
 
-export function CreatePost({ placeholder = "Share something...", onCreated }: CreatePostProps) {
+export function CreatePost({
+  placeholder = "Share something...",
+  onCreated,
+}: CreatePostProps) {
   const { user } = useUser();
   const createPost = useMutation(api.posts.create);
   const generateUploadUrl = useAction(api.posts.generateUploadUrl);
+
+  // Fetch current user and their joined groups
+  const currentUser = useQuery(api.users.getCurrentUser);
+  const allGroups = useQuery(api.groups.list, { joined: true }); // Only joined groups
+
   const [content, setContent] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [open, setOpen] = useState(false);
@@ -45,7 +59,12 @@ export function CreatePost({ placeholder = "Share something...", onCreated }: Cr
   const [captions, setCaptions] = useState<string[]>([]);
   const [pondFiles, setPondFiles] = useState<any[]>([]);
 
-  const disabled = submitting || (content.trim().length === 0 && files.length === 0);
+  // State for posting destination
+  const [postToMyDepartment, setPostToMyDepartment] = useState(false);
+  const [selectedGroup, setSelectedGroup] = useState<string>("");
+
+  const disabled =
+    submitting || (content.trim().length === 0 && files.length === 0);
 
   const handleSubmit = async () => {
     if (disabled) return;
@@ -65,16 +84,38 @@ export function CreatePost({ placeholder = "Share something...", onCreated }: Cr
           const json = (await res.json()) as { storageId: string };
           uploaded.push(json.storageId);
         }
-        const images = uploaded.map((id, i) => ({ id: id as Id<"_storage">, caption: captions[i] || undefined }));
-        await createPost({ content: content.trim(), images, isShowcase: variant === "showcase" });
+        const images = uploaded.map((id, i) => ({
+          id: id as Id<"_storage">,
+          caption: captions[i] || undefined,
+        }));
+        await createPost({
+          content: content.trim(),
+          images,
+          isShowcase: variant === "showcase",
+          departmentId:
+            postToMyDepartment && currentUser?.departmentId
+              ? (currentUser.departmentId as any)
+              : undefined,
+          groupId: selectedGroup ? (selectedGroup as any) : undefined,
+        });
       } else {
-        await createPost({ content: content.trim(), isShowcase: variant === "showcase" });
+        await createPost({
+          content: content.trim(),
+          isShowcase: variant === "showcase",
+          departmentId:
+            postToMyDepartment && currentUser?.departmentId
+              ? (currentUser.departmentId as any)
+              : undefined,
+          groupId: selectedGroup ? (selectedGroup as any) : undefined,
+        });
       }
 
       setContent("");
       setFiles([]);
       setPondFiles([]);
       setCaptions([]);
+      setPostToMyDepartment(false);
+      setSelectedGroup("");
       toast.success("Posted");
       onCreated?.();
       setOpen(false);
@@ -93,7 +134,11 @@ export function CreatePost({ placeholder = "Share something...", onCreated }: Cr
             <Avatar
               size="3"
               src={user?.imageUrl ?? undefined}
-              fallback={(user?.firstName?.[0] ?? "").concat(user?.lastName?.[0] ?? "").toUpperCase() || "?"}
+              fallback={
+                (user?.firstName?.[0] ?? "")
+                  .concat(user?.lastName?.[0] ?? "")
+                  .toUpperCase() || "?"
+              }
             />
             <Box flexGrow="1">
               <TextArea
@@ -112,10 +157,58 @@ export function CreatePost({ placeholder = "Share something...", onCreated }: Cr
             <Dialog.Title>Create post</Dialog.Title>
             <Separator my="3" size="4" />
             <Flex direction="column" gap="3">
-              <SegmentedControl.Root size="2" value={variant} onValueChange={(v) => setVariant(v as any)}>
-                <SegmentedControl.Item value="default">Default</SegmentedControl.Item>
-                <SegmentedControl.Item value="showcase">Showcase</SegmentedControl.Item>
+              <SegmentedControl.Root
+                size="2"
+                value={variant}
+                onValueChange={(v) => setVariant(v as any)}
+              >
+                <SegmentedControl.Item value="default">
+                  Default
+                </SegmentedControl.Item>
+                <SegmentedControl.Item value="showcase">
+                  Showcase
+                </SegmentedControl.Item>
               </SegmentedControl.Root>
+
+              {/* Department and Group Selectors */}
+              <Flex gap="3">
+                <Box style={{ flex: 1 }}>
+                  <Flex asChild align="center" gap="2">
+                    <label>
+                      <Checkbox
+                        checked={postToMyDepartment}
+                        onCheckedChange={(checked) =>
+                          setPostToMyDepartment(!!checked)
+                        }
+                      />
+                      <Text size="2">Post to my department</Text>
+                    </label>
+                  </Flex>
+                </Box>
+
+                <Box style={{ flex: 1 }}>
+                  <Text as="label" size="2" weight="bold" mb="1">
+                    Group (optional)
+                  </Text>
+                  <Select.Root
+                    value={selectedGroup || undefined}
+                    onValueChange={(val) => setSelectedGroup(val || "")}
+                  >
+                    <Select.Trigger
+                      placeholder="Select group..."
+                      style={{ width: "100%" }}
+                    />
+                    <Select.Content>
+                      {allGroups?.map((group) => (
+                        <Select.Item key={group._id} value={group._id}>
+                          {group.emoji} {group.name}
+                        </Select.Item>
+                      ))}
+                    </Select.Content>
+                  </Select.Root>
+                </Box>
+              </Flex>
+
               <TextArea
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
@@ -144,11 +237,20 @@ export function CreatePost({ placeholder = "Share something...", onCreated }: Cr
 
               <Flex justify="end" gap="2" mt="3">
                 <Dialog.Close>
-                  <Button variant="soft" onClick={() => setOpen(false)} disabled={submitting}>
+                  <Button
+                    variant="soft"
+                    onClick={() => setOpen(false)}
+                    disabled={submitting}
+                  >
                     Cancel
                   </Button>
                 </Dialog.Close>
-                <Button onClick={handleSubmit} disabled={disabled} loading={submitting} variant="solid">
+                <Button
+                  onClick={handleSubmit}
+                  disabled={disabled}
+                  loading={submitting}
+                  variant="solid"
+                >
                   Post
                 </Button>
               </Flex>

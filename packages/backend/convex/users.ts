@@ -101,3 +101,54 @@ export const deleteFromClerk = internalMutation({
     }
   },
 });
+
+// MUTATION: Complete onboarding (set department and join groups)
+export const completeOnboarding = mutation({
+  args: {
+    departmentId: v.id("departments"),
+    groupIds: v.array(v.id("groups")),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not authenticated");
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_clerkId", (q) => q.eq("clerkId", identity.subject))
+      .first();
+
+    if (!user) throw new Error("User not found");
+
+    // Update user's department
+    await ctx.db.patch(user._id, {
+      departmentId: args.departmentId,
+      interests: args.groupIds,
+    });
+
+    // Add user to department members
+    const department = await ctx.db.get(args.departmentId);
+    if (department) {
+      const members = department.members || [];
+      if (!members.includes(user._id)) {
+        await ctx.db.patch(args.departmentId, {
+          members: [...members, user._id],
+        });
+      }
+    }
+
+    // Add user to all selected groups
+    for (const groupId of args.groupIds) {
+      const group = await ctx.db.get(groupId);
+      if (group) {
+        const members = group.members || [];
+        if (!members.includes(user._id)) {
+          await ctx.db.patch(groupId, {
+            members: [...members, user._id],
+          });
+        }
+      }
+    }
+
+    return user._id;
+  },
+});
