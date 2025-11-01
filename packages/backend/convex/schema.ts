@@ -129,6 +129,39 @@ export default defineSchema({
    // postIds: v.optional(v.array(v.id("posts"))), nu vad de ce sa avem postIds
    createdAt: v.number(),
  }),
+
+ // Conversații (chat threads)
+ conversations: defineTable({
+   type: v.string(), // "direct" | "group"
+   participants: v.array(v.id("users")), // array de user IDs
+   lastMessageAt: v.optional(v.number()), // pentru sortare
+   createdAt: v.number(),
+ })
+   .index("by_lastMessage", ["lastMessageAt"])
+   .index("by_participant", ["participants"]),
+
+ // Mesaje individuale
+ messages: defineTable({
+   conversationId: v.id("conversations"),
+   senderId: v.id("users"),
+   content: v.string(),
+   mediaUrls: v.optional(v.array(v.string())), // pentru poze/fișiere
+   readBy: v.array(v.id("users")), // cine a citit mesajul
+   createdAt: v.number(),
+ })
+   .index("by_conversation", ["conversationId"])
+   .index("by_sender", ["senderId"]),
+
+ // Membri conversații (pentru many-to-many și status citit)
+ conversationMembers: defineTable({
+   conversationId: v.id("conversations"),
+   userId: v.id("users"),
+   lastReadAt: v.optional(v.number()), // când a deschis ultima dată chat-ul
+   unreadCount: v.number(), // număr mesaje necitite (cached)
+ })
+   .index("by_user", ["userId"])
+   .index("by_conversation", ["conversationId"])
+   .index("by_user_and_conversation", ["userId", "conversationId"]),
 });
 
 

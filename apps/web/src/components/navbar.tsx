@@ -3,9 +3,15 @@
 import { Search, Bell, Mail, User } from "lucide-react";
 import { useState } from "react";
 import Link from "next/link";
+import { UserButton, useUser } from "@clerk/nextjs";
+import { useQuery } from "convex/react";
+import { api } from "@social-media-app/backend/convex/_generated/api";
 
 export function Navbar() {
   const [searchOpen, setSearchOpen] = useState(false);
+
+  const user = useUser();
+  const privateData = useQuery(api.privateData.get);
 
   return (
     <nav className="sticky top-0 z-50 border-b border-border bg-card shadow-sm">
@@ -42,18 +48,19 @@ export function Navbar() {
           >
             <Bell className="h-5 w-5 text-foreground" />
           </button>
-          <button
+          <Link
+            href="/messages"
             className="p-2 hover:bg-muted rounded-lg transition-colors"
             title="Messages"
           >
             <Mail className="h-5 w-5 text-foreground" />
-          </button>
+          </Link>
           <Link
             href="/profile"
             className="p-2 hover:bg-muted rounded-lg transition-colors"
             title="Profile"
           >
-            <User className="h-5 w-5 text-foreground" />
+            <UserButton />
           </Link>
         </div>
       </div>
