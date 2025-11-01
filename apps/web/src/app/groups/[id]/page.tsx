@@ -125,7 +125,7 @@ export default function GroupPage() {
               members.map((member) => (
                 <Link
                   key={member._id}
-                  href={`/profile?id=${member._id}`}
+                  href={`/profile/${member._id}`}
                   style={{ textDecoration: "none" }}
                   onClick={() => setMembersDialogOpen(false)}
                 >

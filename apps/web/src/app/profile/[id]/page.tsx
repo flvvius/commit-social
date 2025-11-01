@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useEffect } from "react";
 import { useQuery } from "convex/react";
 import { api } from "@social-media-app/backend/convex/_generated/api";
 import {
@@ -20,7 +20,7 @@ import {
   Twitter,
   Globe,
   Flame,
-  ArrowLeft,x
+  ArrowLeft,
 } from "lucide-react";
 import { PostCard } from "@/components/feed/post-card";
 import { AVAILABLE_BADGES, badgeUrl } from "@/lib/badges";
@@ -42,10 +42,22 @@ export default function UserProfilePage() {
   const params = useParams();
   const userId = params.id as Id<"users">;
 
+  // Debug logging
+  useEffect(() => {
+    console.log("UserProfilePage - params:", params);
+    console.log("UserProfilePage - userId:", userId);
+  }, [params, userId]);
+
   const user = useQuery(api.users.getUserById, { userId });
   const posts = useQuery(api.posts.listRecent, { limit: 50 });
   const streak = useQuery(api.streaks.getCurrent, {});
   const currentUser = useQuery(api.users.getCurrentUser);
+
+  // Debug logging for queries
+  useEffect(() => {
+    console.log("UserProfilePage - user from getUserById:", user);
+    console.log("UserProfilePage - currentUser:", currentUser);
+  }, [user, currentUser]);
 
   // Filter to user's posts only
   const userPosts = useMemo(() => {
