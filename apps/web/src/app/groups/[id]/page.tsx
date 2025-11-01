@@ -82,7 +82,7 @@ export default function GroupPage() {
             Back to Feed
           </Button>
         </Link>
-        
+
         {/* Leave Group Button - only show if user is a member */}
         {group.isJoined && (
           <Button
@@ -138,7 +138,8 @@ export default function GroupPage() {
         <Dialog.Content maxWidth="450px">
           <Dialog.Title>Leave {group.name}?</Dialog.Title>
           <Dialog.Description size="2" mb="4">
-            Are you sure you want to leave this group? You won't see posts from this group anymore, but you can rejoin anytime.
+            Are you sure you want to leave this group? You won't see posts from
+            this group anymore, but you can rejoin anytime.
           </Dialog.Description>
 
           <Flex gap="3" mt="4" justify="end">

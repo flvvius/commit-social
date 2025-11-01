@@ -85,13 +85,13 @@ export function Navbar() {
 
         {/* Right Actions */}
         <div className="flex items-center gap-4">
-          <SeedButton />
-          <button
+          {/* <SeedButton /> */}
+          {/* <button
             className="p-2 hover:bg-muted rounded-lg transition-colors"
             title="Notifications"
           >
             <Bell className="h-5 w-5 text-foreground" />
-          </button>
+          </button> */}
           <Link
             href="/messages"
             className="p-2 hover:bg-muted rounded-lg transition-colors"
@@ -104,8 +104,11 @@ export function Navbar() {
             className="p-2 hover:bg-muted rounded-lg transition-colors"
             title="Profile"
           >
-            <UserButton />
+            <User className="h-5 w-5 text-foreground" />
           </Link>
+          <div className="p-2">
+            <UserButton />
+          </div>
         </div>
       </div>
     </nav>
